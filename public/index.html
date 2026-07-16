@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="sn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EcoCash Loan Calculator</title>
+
+    <!-- ✅ Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            background-color: #f1f3f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-header {
+            width: 100%;
+            background: linear-gradient(to bottom, #0066ad, #005087);
+            padding: 20px 20px 40px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background: white;
+            width: 92%;
+            max-width: 450px;
+            margin-top: -25px;
+            padding: 30px 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            box-sizing: border-box;
+        }
+
+        h2 {
+            font-size: 22px;
+            color: #333;
+            margin: 0 0 5px;
+            text-align: center;
+        }
+
+        .subtext {
+            font-size: 11px;
+            color: #888;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .slider-section { margin-bottom: 25px; }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 500;
+            font-size: 14px;
+            color: #444;
+        }
+
+        .blue-text { color: #0066ad; font-weight: bold; }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: #0066ad;
+            margin: 15px 0;
+            height: 6px;
+        }
+
+        .slider-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #bbb;
+        }
+
+        .result-container {
+            background: #fafafa;
+            border: 1px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        .result-value {
+            color: #0066ad;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .btn-apply {
+            background: linear-gradient(to right, #0066ad, #005087);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 18px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            color: #ccc;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app-header">
+    <span>EcoCash Loans</span>
+    <span>☰</span>
+</div>
+
+<div class="card">
+    <h2>Wana Chikwereti Chechimbi-chimbi</h2>
+    <div class="subtext">Kutendera nekukasika • Mitengo yakaderera • Nguva inochinjika</div>
+
+    <div class="slider-section">
+        <div class="slider-header">
+            <span>Mari Unoda Kwereta</span>
+            <span id="valAmt" class="blue-text">ZiG 2,000</span>
+        </div>
+        <input type="range" id="amt" min="500" max="20000" step="500" value="2000">
+        <div class="slider-footer"><span>ZiG 500</span><span>ZiG 20,000</span></div>
+    </div>
+
+    <div class="slider-section">
+        <div class="slider-header">
+            <span>Nguva Yekubhadhara</span>
+            <span id="valDur" class="blue-text">Mwedzi 12</span>
+        </div>
+        <input type="range" id="dur" min="3" max="24" step="3" value="12">
+        <div class="slider-footer"><span>Mwedzi 3</span><span>Mwedzi 24</span></div>
+    </div>
+
+    <div class="result-container">
+        <p style="margin:0; font-size:14px; color:#666">Mari yekubhadhara pamwedzi</p>
+        <p id="monthly" class="result-value">ZiG 196.67</p>
+    </div>
+
+    <button class="btn-apply" onclick="goToPage2()">NYORERA IZVIKI</button>
+</div>
+
+<div class="footer">© 2026 EcoCash Zimbabwe</div>
+
+<script>
+    function update() {
+        const amtEl = document.getElementById('amt');
+        const durEl = document.getElementById('dur');
+
+        if (!amtEl || !durEl) return;
+
+        const amount = Number(amtEl.value) || 0;
+        const duration = Number(durEl.value) || 1;
+
+        document.getElementById('valAmt').innerText = `ZiG ${amount.toLocaleString()}`;
+        document.getElementById('valDur').innerText = `Mwedzi ${duration}`;
+
+        // Example calculation: 18% total interest rate applied
+        const monthly = (amount * 1.18) / duration;
+        document.getElementById('monthly').innerText = `ZiG ${monthly.toFixed(2)}`;
+    }
+
+    function goToPage2() {
+        const amtEl = document.getElementById('amt');
+        const durEl = document.getElementById('dur');
+
+        if (!amtEl || !durEl) return;
+
+        localStorage.setItem('amount', amtEl.value);
+        localStorage.setItem('loanDuration', durEl.value + " Mwedzi");
+
+        window.location.href = "/page2";
+    }
+
+    window.onload = () => {
+        const tg = window.Telegram?.WebApp;
+
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+
+        const amtEl = document.getElementById('amt');
+        const durEl = document.getElementById('dur');
+
+        if (amtEl) amtEl.addEventListener('input', update);
+        if (durEl) durEl.addEventListener('input', update);
+
+        update();
+    };
+</script>
+
+</body>
+</html>
