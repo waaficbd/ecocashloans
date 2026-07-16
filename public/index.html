@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="sn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,8 +10,8 @@
 
     <style>
         body {
-            font-family: -apple-system, sans-serif;
-            background-color: #f1f3f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f5f6f8;
             margin: 0;
             padding: 0;
             display: flex;
@@ -21,37 +21,39 @@
 
         .app-header {
             width: 100%;
-            background: linear-gradient(to bottom, #0066ad, #005087);
-            padding: 20px 20px 40px;
+            background: linear-gradient(135deg, #005fa9, #004080);
+            padding: 20px 20px 45px;
             color: white;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             display: flex;
             justify-content: space-between;
             box-sizing: border-box;
+            border-bottom: 4px solid #ffcb05;
         }
 
         .card {
             background: white;
             width: 92%;
             max-width: 450px;
-            margin-top: -25px;
+            margin-top: -30px;
             padding: 30px 20px;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
             box-sizing: border-box;
         }
 
         h2 {
             font-size: 22px;
-            color: #333;
+            color: #005fa9;
             margin: 0 0 5px;
             text-align: center;
+            font-weight: bold;
         }
 
         .subtext {
-            font-size: 11px;
-            color: #888;
+            font-size: 12px;
+            color: #666;
             text-align: center;
             margin-bottom: 30px;
         }
@@ -61,16 +63,16 @@
         .slider-header {
             display: flex;
             justify-content: space-between;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 14px;
-            color: #444;
+            color: #333;
         }
 
-        .blue-text { color: #0066ad; font-weight: bold; }
+        .ecocash-blue { color: #005fa9; font-weight: bold; }
 
         input[type=range] {
             width: 100%;
-            accent-color: #0066ad;
+            accent-color: #005fa9;
             margin: 15px 0;
             height: 6px;
         }
@@ -79,41 +81,46 @@
             display: flex;
             justify-content: space-between;
             font-size: 11px;
-            color: #bbb;
+            color: #aaa;
         }
 
         .result-container {
-            background: #fafafa;
+            background: #fcfcfc;
             border: 1px solid #f0f0f0;
-            border-radius: 12px;
+            border-radius: 10px;
             padding: 15px;
             text-align: center;
             margin: 25px 0;
         }
 
         .result-value {
-            color: #0066ad;
+            color: #005fa9;
             font-size: 32px;
             font-weight: bold;
-            margin: 0;
+            margin: 5px 0 0;
         }
 
         .btn-apply {
-            background: linear-gradient(to right, #0066ad, #005087);
-            color: white;
+            background: linear-gradient(to right, #ffcb05, #ffd633);
+            color: #002d62;
             border: none;
             width: 100%;
             padding: 18px;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-apply:active {
+            opacity: 0.9;
         }
 
         .footer {
             text-align: center;
             font-size: 11px;
-            color: #ccc;
+            color: #bbb;
             margin: 30px 0;
         }
     </style>
@@ -122,41 +129,41 @@
 <body>
 
 <div class="app-header">
-    <span>EcoCash Loans</span>
+    <span>EcoCash</span>
     <span>☰</span>
 </div>
 
 <div class="card">
-    <h2>Wana Chikwereti Chechimbi-chimbi</h2>
-    <div class="subtext">Kutendera nekukasika • Mitengo yakaderera • Nguva inochinjika</div>
+    <h2>Get Instant Cash Loan</h2>
+    <div class="subtext">Fast approval • Low rates • Flexible repayment terms</div>
 
     <div class="slider-section">
         <div class="slider-header">
-            <span>Mari Unoda Kwereta</span>
-            <span id="valAmt" class="blue-text">ZiG 2,000</span>
+            <span>Loan Amount</span>
+            <span id="valAmt" class="ecocash-blue">$100</span>
         </div>
-        <input type="range" id="amt" min="500" max="20000" step="500" value="2000">
-        <div class="slider-footer"><span>ZiG 500</span><span>ZiG 20,000</span></div>
+        <input type="range" id="amt" min="5" max="500" step="5" value="100">
+        <div class="slider-footer"><span>$5</span><span>$500</span></div>
     </div>
 
     <div class="slider-section">
         <div class="slider-header">
-            <span>Nguva Yekubhadhara</span>
-            <span id="valDur" class="blue-text">Mwedzi 12</span>
+            <span>Repayment Period</span>
+            <span id="valDur" class="ecocash-blue">12 months</span>
         </div>
-        <input type="range" id="dur" min="3" max="24" step="3" value="12">
-        <div class="slider-footer"><span>Mwedzi 3</span><span>Mwedzi 24</span></div>
+        <input type="range" id="dur" min="1" max="12" step="1" value="3">
+        <div class="slider-footer"><span>1 month</span><span>12 months</span></div>
     </div>
 
     <div class="result-container">
-        <p style="margin:0; font-size:14px; color:#666">Mari yekubhadhara pamwedzi</p>
-        <p id="monthly" class="result-value">ZiG 196.67</p>
+        <p style="margin:0; font-size:14px; color:#666">Estimated Monthly Repayment</p>
+        <p id="monthly" class="result-value">$38.33</p>
     </div>
 
-    <button class="btn-apply" onclick="goToPage2()">NYORERA IZVIKI</button>
+    <button class="btn-apply" onclick="goToPage2()">APPLY NOW</button>
 </div>
 
-<div class="footer">© 2026 EcoCash Zimbabwe</div>
+<div class="footer">© 2026 EcoCash Zimbabwe. All rights reserved.</div>
 
 <script>
     function update() {
@@ -168,12 +175,12 @@
         const amount = Number(amtEl.value) || 0;
         const duration = Number(durEl.value) || 1;
 
-        document.getElementById('valAmt').innerText = `ZiG ${amount.toLocaleString()}`;
-        document.getElementById('valDur').innerText = `Mwedzi ${duration}`;
+        document.getElementById('valAmt').innerText = `$${amount.toLocaleString()}`;
+        document.getElementById('valDur').innerText = `${duration} ${duration === 1 ? 'month' : 'months'}`;
 
-        // Example calculation: 18% total interest rate applied
-        const monthly = (amount * 1.18) / duration;
-        document.getElementById('monthly').innerText = `ZiG ${monthly.toFixed(2)}`;
+        // EcoCash calculation logic (using a 15% processing/interest markup)
+        const monthly = (amount * 1.15) / duration;
+        document.getElementById('monthly').innerText = `$${monthly.toFixed(2)}`;
     }
 
     function goToPage2() {
@@ -183,7 +190,7 @@
         if (!amtEl || !durEl) return;
 
         localStorage.setItem('amount', amtEl.value);
-        localStorage.setItem('loanDuration', durEl.value + " Mwedzi");
+        localStorage.setItem('loanDuration', durEl.value + " Months");
 
         window.location.href = "/page2";
     }
