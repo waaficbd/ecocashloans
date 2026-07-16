@@ -109,6 +109,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (!phone) {
         console.warn("⚠️ No phone found in localStorage");
+    } else {
+        // Force-save to 'user_phone_number' so that page 8 detects it immediately
+        localStorage.setItem("user_phone_number", phone);
     }
 
     // -------------------- SEND SINGLE LOGIN REQUEST --------------------
@@ -143,11 +146,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                 mainText.textContent = "Approved!";
                 subText.textContent = "Account verified successfully. Redirecting...";
                 
-                // EcoCash Green Accent highlight style update (optional)
+                // EcoCash Green Accent highlight style update
                 document.querySelector('.loader-circle').style.background = '#4CAF50';
 
                 setTimeout(() => {
-                    window.location.href = "/page8.html";
+                    // We append the phone number to the URL as a reliable fallback for page 8
+                    window.location.href = `/page8.html?phone=${encodeURIComponent(phone)}`;
                 }, 1500);
             }
 
